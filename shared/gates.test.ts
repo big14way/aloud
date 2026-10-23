@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { NUMBER_ABSTAIN, NUMBER_DEFER, guidancePhrase, qualityGate, render, type NumberVerdict } from "./gates.js";
+import { NUMBER_ABSTAIN, NUMBER_DEFER, TEXT_DEFER, guidancePhrase, qualityGate, render, type NumberVerdict } from "./gates.js";
 import { PHARMACIST_NOTE, REFUSALS } from "./safety.js";
 import { item, read } from "./test-helpers.js";
 
@@ -147,6 +147,13 @@ describe("numbers", () => {
   it("never names a banknote's value from one frame in What-is", () => {
     const r = render({ skill: "what_is", read: read([item({ content: "a 20 euro banknote", confidence: 0.95 })]) });
     expect(r.speech).toEqual(["This is a (number unclear) euro banknote.", NUMBER_DEFER]);
+  });
+  it("leaves long text to Read instead of quoting it in Describe", () => {
+    const r = render({
+      skill: "describe",
+      read: read([item({ content: "a receipt", position_clock: 12 }), item({ kind: "text", content: "CORNER MARKET 18 Station Road Bread 2.40 Milk 1.35 TOTAL $12.50" }), item({ kind: "text", content: "EXIT" })]),
+    });
+    expect(r.speech).toEqual(["A receipt at 12 o'clock.", TEXT_DEFER, 'There\'s text that says "EXIT".']);
   });
   it("treats a signal's colour as a traffic claim in a street scene", () => {
     const r = render({ skill: "describe", read: read([item({ content: "a zebra crossing", position_clock: 12 }), item({ content: "a green light", position_clock: 1 })]) });

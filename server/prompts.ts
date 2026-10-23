@@ -27,7 +27,8 @@ export const SKILL_PROMPTS = {
 List every distinct thing that matters to someone moving or working here, up to 6 items, each object as its own item (do not merge a mug and a kettle into "kitchen items").
 Put hazards first as kind "hazard": sharp or hot things, steps, edges, obstacles at head or foot height, open doors, spills.
 Then the main objects on tables, counters, shelves and the floor. Each content is a short noun phrase starting with "a", "an" or "the", with one useful detail, e.g. "a knife on the board, blade toward you".
-End with one item of kind "place" if the setting is clear, e.g. "a kitchen". Use kind "text" for short signs, quoting them exactly.`,
+End with one item of kind "place" if the setting is clear, e.g. "a kitchen". Use kind "text" for short signs, quoting them exactly.
+Do not transcribe letters, receipts or other long text here: list the document as one item of kind "object", e.g. "a shop receipt", and the user can press Read.`,
 
   read: `Read all legible text exactly as written, in reading order.
 One item per line, label field or sign. Use kind "text" for words and kind "number" for a standalone price, amount, phone number, date, time or banknote value.

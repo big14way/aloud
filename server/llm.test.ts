@@ -23,6 +23,7 @@ describe("chatJson", () => {
     expect(res.data.answer).toBe("fixed");
     expect(llm.requests).toHaveLength(2);
     expect(JSON.stringify(llm.requests[1]?.messages.at(-1))).toContain("not valid JSON");
+    expect(llm.requests[1]?.maxTokens).toBe(1200);
     expect(res.metrics).toHaveLength(2);
   });
 

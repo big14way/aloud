@@ -202,11 +202,12 @@ export async function chatJson<T>(
     return [{ role: "system", content: hint }, ...messages];
   };
 
-  const call = async (messages: Message[]): Promise<ChatResult> => {
+  const call = async (messages: Message[], maxTokens = req.maxTokens): Promise<ChatResult> => {
     for (;;) {
       try {
         const result = await llm.chat({
           ...req,
+          maxTokens,
           messages: withSchemaHint(messages),
           responseFormat: mode === "json_schema" ? { name, schema: jsonSchema } : mode === "json_object" ? "json_object" : undefined,
         });
@@ -229,6 +230,8 @@ export async function chatJson<T>(
     const parsed = tryParse(first.text, schema);
     if (parsed.ok) return { data: parsed.data, metrics };
 
+    // A cut-off answer (token limit) gets twice the room on the retry instead of the same wall.
+    const roomier = Math.min(8000, (req.maxTokens ?? 600) * 2);
     const retry = await call([
       ...req.messages,
       { role: "assistant", content: first.text.slice(0, 4000) },
@@ -236,7 +239,7 @@ export async function chatJson<T>(
         role: "user",
         content: `The previous answer was not valid JSON for the schema (${parsed.error}). Reply ONLY with the corrected JSON object.`,
       },
-    ]);
+    ], roomier);
     const second = tryParse(retry.text, schema);
     if (second.ok) return { data: second.data, metrics };
     throw new ModelError(`Model returned invalid JSON twice: ${second.error}`, "invalid_output");

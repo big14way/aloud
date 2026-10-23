@@ -146,6 +146,9 @@ const KIND_ORDER: Record<VisionItem["kind"], number> = {
 
 /** Upper bound on items spoken by Describe, so answers stay to a couple of sentences. */
 export const DESCRIBE_MAX_ITEMS = 4;
+/** Describe quotes short signs; longer text is left to Read. */
+export const DESCRIBE_MAX_QUOTED_WORDS = 6;
+export const TEXT_DEFER = "There's writing here. Press Read to hear it.";
 
 export function render(input: RenderInput): Rendered {
   const { skill, read } = input;
@@ -174,6 +177,7 @@ function renderDescribe(input: RenderInput, flags: string[]): Body {
   let trafficRefused = false;
   let medicineNoted = false;
   let numberNoted = false;
+  let textDeferred = false;
 
   const ordered = read.items
     .map((item, index) => ({ item, index }))
@@ -206,6 +210,12 @@ function renderDescribe(input: RenderInput, flags: string[]): Body {
       flags.push("medicine");
       if (!medicineNoted) speech.push("There's a medicine label. Press Read to hear it word for word.");
       medicineNoted = true;
+      continue;
+    }
+    if (item.kind === "text" && item.content.split(/\s+/).length > DESCRIBE_MAX_QUOTED_WORDS) {
+      if (!textDeferred) speech.push(TEXT_DEFER);
+      textDeferred = true;
+      flags.push("text_deferred");
       continue;
     }
     let content = stripEndPunctuation(item.content);

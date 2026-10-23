@@ -36,7 +36,7 @@ function withoutMetrics(err: unknown): unknown {
 }
 
 const MAX_TOKENS: Record<SeeRequest["skill"], number> = {
-  describe: 500,
+  describe: 800,
   read: 1500,
   what_is: 400,
   enrol: 400,
