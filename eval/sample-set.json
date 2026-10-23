@@ -10,9 +10,18 @@
       "category": "text",
       "skill": "read",
       "truth_text": "Riverside Library 4 Mill Lane Ashford Green 12 October 2026 Dear Sam Okafor, Two books you borrowed are due back on 14 November 2026. You can renew them by phone on 0161 496 0142. Our opening hours are 9:00 to 17:00, Monday to Saturday. Kind regards, Maya Lindqvist Library Services",
-      "key_facts": ["Dear Sam Okafor", "14 November 2026", "0161 496 0142"],
+      "key_facts": [
+        "Dear Sam Okafor",
+        "14 November 2026",
+        "0161 496 0142"
+      ],
       "scene": "A printed letter from Riverside Library on a wooden table.",
-      "numbers": ["14 November 2026", "0161 496 0142", "9:00", "17:00"],
+      "numbers": [
+        "14 November 2026",
+        "0161 496 0142",
+        "9:00",
+        "17:00"
+      ],
       "split": "dev"
     },
     {
@@ -22,9 +31,18 @@
       "category": "price",
       "skill": "read",
       "truth_text": "CORNER MARKET 18 Station Road 23/10/2026 10:42 Bread 2.40 Milk 1L 1.35 Apples x4 3.20 Rice 1kg 5.55 TOTAL $12.50 CARD $12.50 Thank you",
-      "key_facts": ["total", "$12.50"],
+      "key_facts": [
+        "total",
+        "$12.50"
+      ],
       "scene": "A shop receipt from Corner Market on a wooden table.",
-      "numbers": ["$12.50", "2.40", "1.35", "3.20", "5.55"],
+      "numbers": [
+        "$12.50",
+        "2.40",
+        "1.35",
+        "3.20",
+        "5.55"
+      ],
       "split": "dev"
     },
     {
@@ -34,9 +52,15 @@
       "category": "price",
       "skill": "read",
       "truth_text": "Oat Biscuits 300 g $4.99 $1.66 per 100 g",
-      "key_facts": ["Oat Biscuits", "$4.99"],
+      "key_facts": [
+        "Oat Biscuits",
+        "$4.99"
+      ],
       "scene": "A yellow shelf price tag for oat biscuits.",
-      "numbers": ["$4.99", "$1.66"],
+      "numbers": [
+        "$4.99",
+        "$1.66"
+      ],
       "split": "heldout"
     },
     {
@@ -46,9 +70,16 @@
       "category": "text",
       "skill": "read",
       "truth_text": "LIBRARY Open 9:00 to 17:00 Monday to Saturday Entrance on the left",
-      "key_facts": ["library", "9:00", "17:00"],
+      "key_facts": [
+        "library",
+        "9:00",
+        "17:00"
+      ],
       "scene": "A blue library sign on a post outdoors with opening hours and an arrow pointing left.",
-      "numbers": ["9:00", "17:00"],
+      "numbers": [
+        "9:00",
+        "17:00"
+      ],
       "split": "heldout"
     },
     {
@@ -57,9 +88,18 @@
       "file2": "frame2/letter_cut_off.jpg",
       "category": "bad_shot",
       "skill": "read",
-      "key_facts": ["cut off on the right|move the phone right"],
+      "key_facts": [
+        "cut off on the right|move the phone right"
+      ],
       "scene": "The library letter, with its right side outside the frame.",
-      "split": "dev"
+      "split": "dev",
+      "truth_text": "Riverside Library 4 Mill Lane Ashford Green 12 October 2026 Dear Sam Okafor, Two books you borrowed are due back on 14 November 2026. You can renew them by phone on 0161 496 0142. Our opening hours are 9:00 to 17:00, Monday to Saturday. Kind regards, Maya Lindqvist Library Services",
+      "numbers": [
+        "14 November 2026",
+        "0161 496 0142",
+        "9:00",
+        "17:00"
+      ]
     },
     {
       "id": "letter_dark",
@@ -69,7 +109,14 @@
       "skill": "read",
       "expect": "guidance",
       "scene": "The library letter in near darkness.",
-      "split": "dev"
+      "split": "dev",
+      "truth_text": "Riverside Library 4 Mill Lane Ashford Green 12 October 2026 Dear Sam Okafor, Two books you borrowed are due back on 14 November 2026. You can renew them by phone on 0161 496 0142. Our opening hours are 9:00 to 17:00, Monday to Saturday. Kind regards, Maya Lindqvist Library Services",
+      "numbers": [
+        "14 November 2026",
+        "0161 496 0142",
+        "9:00",
+        "17:00"
+      ]
     },
     {
       "id": "receipt_blurry",
@@ -86,7 +133,10 @@
       "file": "can_label.jpg",
       "category": "grocery",
       "skill": "what_is",
-      "key_facts": ["tomato", "tin|can"],
+      "key_facts": [
+        "tomato",
+        "tin|can"
+      ],
       "scene": "A tin of Hillfield chopped tomatoes in tomato juice, 400 g, on a wooden table.",
       "split": "dev"
     },
@@ -95,7 +145,11 @@
       "file": "kitchen.jpg",
       "category": "scene",
       "skill": "describe",
-      "key_facts": ["kettle", "mug|cup", "knife"],
+      "key_facts": [
+        "kettle",
+        "mug|cup",
+        "knife"
+      ],
       "scene": "A kitchen counter with a silver kettle at the back, a blue mug on the left, and a knife on a wooden chopping board on the right.",
       "hazard": true,
       "split": "dev"
@@ -105,7 +159,11 @@
       "file": "room.jpg",
       "category": "scene",
       "skill": "describe",
-      "key_facts": ["basket|hamper", "clothes|clothing|laundry", "bed"],
+      "key_facts": [
+        "basket|hamper",
+        "clothes|clothing|laundry",
+        "bed"
+      ],
       "scene": "A bedroom with a bed, clothes on the floor, books on the floor, a laundry basket, and a shelf with two books.",
       "split": "heldout"
     },
@@ -114,7 +172,9 @@
       "file": "keys_shelf.jpg",
       "category": "object",
       "skill": "what_is",
-      "key_facts": ["key"],
+      "key_facts": [
+        "key"
+      ],
       "scene": "A gold key ring with two silver keys and a pink tag on a wooden shelf.",
       "split": "dev"
     },
@@ -124,9 +184,13 @@
       "file2": "frame2/microwave.jpg",
       "category": "appliance",
       "skill": "label",
-      "key_facts": ["MW-2041|MW2041"],
+      "key_facts": [
+        "MW-2041|MW2041"
+      ],
       "scene": "A microwave with a control panel (display 12:00, Power, Defrost, Timer, Clock, a dial, Start and Stop) and a rating label reading ACME HOME, Model: MW-2041, 230V 50Hz 800 W.",
-      "numbers": ["MW-2041"],
+      "numbers": [
+        "MW-2041"
+      ],
       "split": "heldout"
     },
     {
@@ -134,7 +198,10 @@
       "file": "crossing.jpg",
       "category": "safety",
       "skill": "describe",
-      "key_facts": ["crossing|zebra", "traffic light|signal"],
+      "key_facts": [
+        "crossing|zebra",
+        "traffic light|signal"
+      ],
       "scene": "A zebra crossing on a road with a traffic light on the right.",
       "split": "dev"
     }

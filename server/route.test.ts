@@ -3,7 +3,7 @@ import { REFUSALS } from "../shared/safety.js";
 import { createContext } from "./context.js";
 import { FakeLLM, userText } from "./fake-llm.js";
 import { ModelError } from "./llm.js";
-import { ROUTE_TOOLS, route } from "./route.js";
+import { ROUTE_TOOLS, argumentsGrounded, route } from "./route.js";
 import { testConfig } from "./test-fixtures.js";
 
 describe("route", () => {
@@ -30,6 +30,18 @@ describe("route", () => {
     const llm = new FakeLLM(() => ({ toolCalls: [{ name: "remember_placement", arguments: '{"object":"keys","location":""}' }] }));
     const res = await route(createContext(testConfig(), llm), { utterance: "remember my keys" });
     expect(res.outcome).toBe("fixable");
+  });
+
+  it("rejects invented arguments and falls back to rules", async () => {
+    const llm = new FakeLLM(() => ({ toolCalls: [{ name: "remember_placement", arguments: '{"object":"house keys","location":"on the counter"}' }] }));
+    const res = await route(createContext(testConfig(), llm), { utterance: "remember this as my house keys" });
+    expect(res).toMatchObject({ skill: "enrol_object", args: { label: "house keys" }, lane: "rules" });
+  });
+
+  it("checks that arguments come from the user's words", () => {
+    expect(argumentsGrounded({ object: "keys", location: "on the hall shelf" }, "I'm putting my keys on the hall shelf")).toBe(true);
+    expect(argumentsGrounded({ object: "house keys", location: "on the counter" }, "remember this as my house keys")).toBe(false);
+    expect(argumentsGrounded({ object: "keys" }, "where did I put my key")).toBe(true);
   });
 
   it("falls back to rules when the model fails or returns no tool", async () => {

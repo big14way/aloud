@@ -106,6 +106,14 @@ describe("read with two frames", () => {
     expect(res.speech).toContain(NUMBER_ABSTAIN);
   });
 
+  it("does not check numbers, or call Ultra, when the answer is only guidance", async () => {
+    const dark = { image_quality: { blur: false, too_dark: true, glare: false, cut_off: "none" as const } };
+    const { llm, ctx } = setup((r) => visionJson([{ kind: "number", content: firstImage(r) === FRAME_A ? "$12.50" : "$17.50", number_kind: "price", confidence: 0.6 }], dark));
+    const res = await see(ctx, req({ skill: "read", frames: [FRAME_A, FRAME_B] }));
+    expect(res.status).toBe("guidance");
+    expect(llm.requests.some((r) => r.lane === "judge")).toBe(false);
+  });
+
   it("uses the better frame when the first one is unusable", async () => {
     const { ctx } = setup((r) =>
       firstImage(r) === FRAME_A

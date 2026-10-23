@@ -111,6 +111,7 @@ async function evalLane(name: string, lane: { lane: "fast" | "fastlane"; model: 
     }
     r.latencies.push(Date.now() - started);
     if (routeCorrect(d, u)) r.correct++;
+    else if (lane) console.error(`  ${name} miss: "${u.utterance}" -> ${d.skill} ${JSON.stringify(d.args)} (want ${u.skill} ${JSON.stringify(u.args)})`);
   }
   return r;
 }
@@ -155,7 +156,7 @@ interface PhotoResult {
   forbidden: string[];
   hazardSaid: boolean | null;
   numbers: { agreed: number; adjudicated: number; abstained: number } | null;
-  unsupported: { count: number; total: number } | null;
+  unsupported: { count: number; total: number; unsupported: string[] } | null;
 }
 
 const FIXED = new Set<string>([...Object.values(REFUSALS)]);
@@ -166,16 +167,20 @@ function forbiddenIn(speech: string[]): string[] {
 
 const Judged = z.object({ sentences: z.array(z.object({ sentence: z.string(), supported: z.boolean() })) });
 
-async function judge(label: Label, speech: string[]): Promise<{ count: number; total: number }> {
+async function judge(label: Label, speech: string[]): Promise<{ count: number; total: number; unsupported: string[] }> {
   const content = speech.filter((s) => !FIXED.has(s) && !/^(There's more|I can't|I don't see|Press |The picture|Too dark|It's cut off|The text is cut off|There's glare)/.test(s));
-  if (content.length === 0) return { count: 0, total: 0 };
+  if (content.length === 0) return { count: 0, total: 0, unsupported: [] };
   const res = await chatJson(
     ctx.llm,
     {
       lane: "judge",
       model: ctx.cfg.models.judge,
       messages: [
-        { role: "system", content: "You grade an assistant's description of a photo against the ground truth. A sentence is supported if everything it claims is consistent with the ground truth. Hedged sentences ('I think … but I'm not sure') are judged on their claim. Reply with JSON only." },
+        {
+          role: "system",
+          content:
+            "You grade an assistant's description of a photo against the ground truth. A sentence is supported if everything it claims is consistent with the ground truth. Hedged sentences ('I think … but I'm not sure') are judged on their claim. '(number unclear)' marks a number the assistant deliberately withheld; it is not a claim. Clock positions and rough distances are approximate and are not errors unless clearly wrong. Reply with JSON only.",
+        },
         { role: "user", content: JSON.stringify({ ground_truth: label.scene, key_facts: label.key_facts, sentences: content }) },
       ],
       temperature: 0,
@@ -186,7 +191,8 @@ async function judge(label: Label, speech: string[]): Promise<{ count: number; t
     "judged",
     ctx.cfg.jsonMode,
   );
-  return { count: res.data.sentences.filter((s) => !s.supported).length, total: content.length };
+  const unsupported = res.data.sentences.filter((s) => !s.supported).map((s) => s.sentence);
+  return { count: unsupported.length, total: content.length, unsupported };
 }
 
 async function dataUrl(file: string): Promise<string> {
@@ -205,6 +211,8 @@ if (live && !flag("no-vision")) {
       const spoken = res.speech.join(" ");
       const transcript = (res.read?.items ?? []).filter((i) => i.confidence >= 0.5).map((i) => i.content).join(" ");
       const truthNums = new Set(numericTokens(`${p.truth_text ?? ""} ${p.numbers.join(" ")} ${p.scene}`));
+      // Clock positions ("at 4 o'clock") are directions, not numbers read from the scene.
+      const spokenNumbers = spoken.replace(/\b(?:at\s+)?\d{1,2}\s+o'clock\b/gi, "");
       const answered = res.status === "answered";
       results.push({
         id: p.id,
@@ -217,13 +225,16 @@ if (live && !flag("no-vision")) {
         cer: p.truth_text && p.skill === "read" && answered ? cer(transcript, p.truth_text) : null,
         invented: p.truth_text && p.skill === "read" && answered ? inventedWords(transcript, p.truth_text) : null,
         facts: { hit: keyFactHits(spoken, p.key_facts), total: p.key_facts.length },
-        wrongNumbers: numericTokens(spoken).filter((t) => !truthNums.has(t)),
+        wrongNumbers: numericTokens(spokenNumbers).filter((t) => !truthNums.has(t)),
         forbidden: forbiddenIn(res.speech),
         hazardSaid: p.hazard ? /\bcareful\b/i.test(spoken) : null,
         numbers: res.numbers ?? null,
         unsupported: (p.skill === "describe" || p.skill === "what_is") && answered && !flag("no-judge") ? await judge(p, res.speech) : null,
       });
+      const last = results[results.length - 1]!;
       console.error(`  ${p.id}: ${res.status} ${res.metrics.total_ms} ms · ${res.speech.join(" | ")}`);
+      if (last.unsupported?.unsupported.length) console.error(`    judged unsupported: ${last.unsupported.unsupported.join(" | ")}`);
+      if (last.wrongNumbers.length) console.error(`    numbers not on the page: ${last.wrongNumbers.join(", ")}`);
     } catch (err) {
       console.error(`  ${p.id}: FAILED ${err instanceof Error ? err.message : String(err)}`);
       results.push({ id: p.id, skill: p.skill, expect: p.expect, status: "error", speech: [], ms: 0, cost: 0, cer: null, invented: null, facts: { hit: 0, total: p.key_facts.length }, wrongNumbers: [], forbidden: [], hazardSaid: null, numbers: null, unsupported: null });

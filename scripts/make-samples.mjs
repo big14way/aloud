@@ -141,7 +141,7 @@ const scenes = {
 
 /** Variants that make the honest-uncertainty gates visible. */
 const variants = {
-  letter_dark: { base: "letter", css: "body{filter:brightness(.13) contrast(.8)}" },
+  letter_dark: { base: "letter", css: "body{filter:brightness(.035) contrast(.6) blur(1.5px)}" },
   receipt_blurry: { base: "receipt", css: "body{filter:blur(7px)}" },
   letter_cut_off: { base: "letter", css: "body{background:#5f3f22}.scene{transform:translateX(330px) scale(1.05)}" },
 };

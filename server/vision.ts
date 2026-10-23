@@ -129,7 +129,8 @@ async function seeAndSay(ctx: Ctx, req: SeeRequest, skill: VisionSkill, meter: M
 
   let numbers: Map<number, NumberVerdict> | undefined;
   let counts: SeeResponse["numbers"];
-  if (skill === "read") {
+  // Number checks (and any Ultra call) only matter when the read will be spoken, not for guidance.
+  if (skill === "read" && qualityGate(primary, skill).pass) {
     const verdicts = await verifyNumbers(ctx, meter, primary, second);
     numbers = verdicts;
     counts = { agreed: 0, adjudicated: 0, abstained: 0 };

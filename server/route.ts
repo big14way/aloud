@@ -1,4 +1,4 @@
-import type { RouteRequest, RouteResponse, RouteSkill } from "../shared/api.js";
+import type { RouteArgs, RouteRequest, RouteResponse, RouteSkill } from "../shared/api.js";
 import { type RouteDecision, refusalFor, routeByRules, validateRoute } from "../shared/router.js";
 import { type Ctx, Meter, withTextLane } from "./context.js";
 import type { ChatRequest, Tool } from "./llm.js";
@@ -23,16 +23,16 @@ function tool(name: string, description: string, props: Record<string, string> =
 }
 
 export const ROUTE_TOOLS: Tool[] = [
-  tool("describe_scene", "Say what is in front of the camera: objects, hazards, layout."),
-  tool("read_text", "Read printed text aloud word for word: letters, labels, signs, receipts, screens."),
-  tool("identify_object", "Say what the single object held up to the camera is."),
-  tool("find_object", "Answer where one of the user's remembered objects is.", { object: "The object, in the user's words, e.g. 'house keys'." }),
-  tool("remember_placement", "The user is putting an object somewhere and wants it remembered.", {
+  tool("describe_scene", "Say what is in front of the camera: objects, hazards, layout. E.g. \"what's in front of me\", \"anything in my way?\"."),
+  tool("read_text", "Read printed text aloud word for word: letters, labels, signs, receipts, prices, totals, screens. E.g. \"read this\", \"what's the price\"."),
+  tool("identify_object", "Say what the single object held up to the camera is. E.g. \"what is this\", \"which tin is this\"."),
+  tool("find_object", "Answer where one of the user's remembered objects is. E.g. \"where are my keys\".", { object: "The object, in the user's words, e.g. 'house keys'." }),
+  tool("remember_placement", "The user says where they are putting an object right now. Only when the user names the place. E.g. \"I'm putting my keys on the hall shelf\".", {
     object: "The object, e.g. 'keys'.",
-    location: "Where, starting with a preposition, e.g. 'on the hall shelf'.",
+    location: "Where, copied from the user's words, starting with a preposition, e.g. 'on the hall shelf'.",
   }),
-  tool("picked_up", "The user has taken an object from where it was.", { object: "The object, e.g. 'wallet'." }),
-  tool("enrol_object", "Learn a new personal object from the camera so it can be found later.", { label: "What to call it, e.g. 'car keys'." }),
+  tool("picked_up", "The user has taken an object with them. E.g. \"I've got my keys\", \"I took my wallet\".", { object: "The object, e.g. 'wallet'." }),
+  tool("enrol_object", "The user is showing a new object to the camera so Aloud learns what it looks like. E.g. \"remember this as my house keys\", \"save this as my wallet\", \"this is my blue mug\".", { label: "What to call it, e.g. 'car keys'." }),
   tool("appliance_help", "Help the user operate an appliance step by step using its manual.", { task: "What the user wants to do, e.g. 'defrost bread'." }),
   tool("plan_task", "Break an everyday task in front of the user into small spoken steps.", { goal: "The task, e.g. 'tidy my room'." }),
   tool("repeat_last", "Repeat the last answer."),
@@ -83,6 +83,32 @@ export function decisionFromToolCall(name: string, rawArgs: string, known: strin
 }
 
 /** One routing call on a given model lane. Throws if the model gives no usable tool call. */
+/** Content words of an argument that must come from what the user said. */
+function contentWords(s: string): string[] {
+  return s
+    .toLowerCase()
+    .replace(/['’]s\b/g, "")
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter((w) => w.length > 2 && !["the", "and", "you", "your", "my", "our", "this", "that", "with", "from"].includes(w));
+}
+
+/**
+ * Arguments must be grounded in the user's words: a model may not invent a place
+ * ("on the counter") or an object the user never mentioned.
+ */
+export function argumentsGrounded(args: RouteArgs, utterance: string): boolean {
+  const said = new Set(contentWords(utterance).map((w) => w.replace(/s$/, "")));
+  for (const key of ["object", "location", "label"] as const) {
+    const value = args[key];
+    if (!value) continue;
+    const words = contentWords(value);
+    if (words.length === 0) continue;
+    const found = words.filter((w) => said.has(w.replace(/s$/, ""))).length;
+    if (found / words.length < 0.5) return false;
+  }
+  return true;
+}
+
 export async function routeWithModel(ctx: Ctx, req: RouteRequest, lane: Pick<ChatRequest, "lane" | "model">, meter: Meter): Promise<RouteDecision> {
   const res = await ctx.llm.chat({
     ...lane,
@@ -100,6 +126,7 @@ export async function routeWithModel(ctx: Ctx, req: RouteRequest, lane: Pick<Cha
   const call = res.toolCalls[0];
   const decision = call ? decisionFromToolCall(call.name, call.arguments, req.known_objects ?? []) : null;
   if (!decision) throw new Error("no usable tool call");
+  if (!argumentsGrounded(decision.args, req.utterance)) throw new Error("tool arguments not grounded in the utterance");
   return decision;
 }
 

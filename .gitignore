@@ -42,3 +42,6 @@ aloud-memory-*.json
 .idea
 .vscode/*
 !.vscode/extensions.json
+
+# local live-test scratch
+.live/
