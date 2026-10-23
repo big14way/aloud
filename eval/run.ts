@@ -76,6 +76,7 @@ function routeCorrect(d: RouteDecision, expected: { skill: string; args: Record<
 
 interface LaneResult {
   lane: string;
+  split: string;
   correct: number;
   valid: number;
   total: number;
@@ -83,9 +84,10 @@ interface LaneResult {
   cost: number;
 }
 
-async function evalLane(name: string, lane: { lane: "fast" | "fastlane"; model: string } | null): Promise<LaneResult> {
-  const r: LaneResult = { lane: name, correct: 0, valid: 0, total: utterances.length, latencies: [], cost: 0 };
-  for (const u of utterances) {
+async function evalLane(name: string, lane: { lane: "fast" | "fastlane"; model: string } | null, which: "dev" | "heldout"): Promise<LaneResult> {
+  const subset = utterances.filter((u) => u.split === which);
+  const r: LaneResult = { lane: name, split: which, correct: 0, valid: 0, total: subset.length, latencies: [], cost: 0 };
+  for (const u of subset) {
     const started = Date.now();
     let d: RouteDecision;
     if (!lane) {
@@ -117,15 +119,20 @@ out(`## Intent routing`);
 out();
 out(`${utterances.length} labelled spoken requests (synthetic, ${split}). Correct means the right skill and the key argument words.`);
 out();
-out(`| Lane | Accuracy | Valid tool calls | p50 latency | $ per 1K calls |`);
-out(`|---|---|---|---|---|`);
-const laneRows: LaneResult[] = [await evalLane("Rules (offline)", null)];
-if (live && !flag("no-model-routing")) laneRows.push(await evalLane(`Nemotron 3.5 Lightning`, { lane: "fast", model: ctx.cfg.models.fast }));
+out(`The rules lane was tuned on the dev split, so its held-out row is the honest one.`);
+out();
+out(`| Lane | Split | Accuracy | Valid tool calls | p50 latency | $ per 1K calls |`);
+out(`|---|---|---|---|---|---|`);
+const splits = (["dev", "heldout"] as const).filter((x) => inSplit(x));
+const lanes: [string, { lane: "fast" | "fastlane"; model: string } | null][] = [["Rules (offline)", null]];
+if (live && !flag("no-model-routing")) lanes.push(["Nemotron 3.5 Lightning", { lane: "fast", model: ctx.cfg.models.fast }]);
 if (ctx.cfg.fastlane && !flag("no-model-routing") && (await ctx.fastlane.check(true)) === "up") {
-  laneRows.push(await evalLane(`Distilled Nemotron Nano 4B`, { lane: "fastlane", model: ctx.cfg.fastlane.model }));
+  lanes.push(["Distilled Nemotron Nano 4B", { lane: "fastlane", model: ctx.cfg.fastlane.model }]);
 }
+const laneRows: LaneResult[] = [];
+for (const [name, lane] of lanes) for (const which of splits) laneRows.push(await evalLane(name, lane, which));
 for (const r of laneRows) {
-  out(`| ${r.lane} | ${formatRate(rate(r.correct, r.total))} | ${formatRate(rate(r.valid, r.total))} | ${ms(percentile(r.latencies, 50))} | $${((r.cost / Math.max(1, r.total)) * 1000).toFixed(3)} |`);
+  out(`| ${r.lane} | ${r.split} | ${formatRate(rate(r.correct, r.total))} | ${formatRate(rate(r.valid, r.total))} | ${ms(percentile(r.latencies, 50))} | $${((r.cost / Math.max(1, r.total)) * 1000).toFixed(3)} |`);
 }
 out();
 
