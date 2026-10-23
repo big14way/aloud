@@ -3,6 +3,7 @@ import { Hono, type Context } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import type { z } from "zod";
 import {
+  ApplianceRequest,
   ERROR_SPEECH,
   type ErrorKind,
   type ErrorResponse,
@@ -12,10 +13,12 @@ import {
   ShapeRequest,
   type ShapeResponse,
 } from "../shared/api.js";
+import { applianceSteps } from "./appliance.js";
 import { createContext, type Ctx, Meter } from "./context.js";
 import { ModelError } from "./llm.js";
 import { route } from "./route.js";
 import { shapeEasy } from "./shape.js";
+import { Tavily, TavilyError } from "./tavily.js";
 import { see } from "./vision.js";
 
 // Stateless API: nothing here writes images or audio anywhere. Logs carry only
@@ -40,7 +43,7 @@ function log(entry: Record<string, unknown>): void {
   console.log(JSON.stringify({ t: new Date().toISOString(), ...entry }));
 }
 
-export function createApp(ctx: Ctx = createContext()) {
+export function createApp(ctx: Ctx = createContext(), tavily: (apiKey: string) => Tavily = (key) => new Tavily(key)) {
   const app = new Hono().basePath("/api");
   app.use("*", bodyLimit({ maxSize: 4 * 1024 * 1024, onError: (c) => fail(c, "bad_request", 413, { detail: "body too large" }) }));
 
@@ -117,6 +120,25 @@ export function createApp(ctx: Ctx = createContext()) {
     const res = await route(ctx, parsed.data);
     log({ route: "route", skill: res.skill, outcome: res.outcome, lane: res.lane, ms: res.metrics.total_ms, cost_usd: res.metrics.cost_usd });
     return c.json(res);
+  });
+
+  app.post("/appliance", async (c) => {
+    const blocked = guard(c);
+    if (blocked) return blocked;
+    if (!ctx.cfg.tavilyApiKey) return fail(c, "not_configured", 503, { speech: ["The appliance helper needs its search key. Everything else still works."] });
+    const parsed = await parse(c, ApplianceRequest);
+    if (!parsed.ok) return parsed.res;
+    try {
+      const res = await applianceSteps(ctx, parsed.data, tavily(ctx.cfg.tavilyApiKey));
+      log({ route: "appliance", found: res.found_instructions, steps: res.steps.length, sources: res.sources.length, ms: res.metrics.total_ms, cost_usd: res.metrics.cost_usd });
+      return c.json(res);
+    } catch (err) {
+      if (err instanceof TavilyError) {
+        log({ route: "appliance", error: "tavily", status: err.status });
+        return fail(c, "tool_error", 502);
+      }
+      return modelFailure(c, err, "appliance");
+    }
   });
 
   app.post("/shape", async (c) => {
