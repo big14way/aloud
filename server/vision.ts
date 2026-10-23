@@ -96,10 +96,13 @@ export async function see(ctx: Ctx, req: SeeRequest): Promise<SeeResponse> {
 async function seeAndSay(ctx: Ctx, req: SeeRequest, skill: VisionSkill, meter: Meter): Promise<SeeResponse> {
   // Read uses both frames so numbers can be cross-checked; the others need one.
   const frames = skill === "read" ? req.frames : req.frames.slice(0, 1);
-  const calls = await Promise.all(frames.map((f) => visionCall(ctx, req, VisionRead, "vision_read", SKILL_PROMPTS[skill], [f])));
-  for (const c of calls) meter.add(c.metrics);
-  let primary = normalizeRead(calls[0]!.data);
-  let second = calls[1] ? normalizeRead(calls[1].data) : null;
+  const [first, extra] = await Promise.allSettled(frames.map((f) => visionCall(ctx, req, VisionRead, "vision_read", SKILL_PROMPTS[skill], [f])));
+  // The first frame must succeed. If only the second fails, numbers abstain but the text is still read.
+  if (first!.status === "rejected") throw first!.reason;
+  meter.add(first!.value.metrics);
+  if (extra?.status === "fulfilled") meter.add(extra.value.metrics);
+  let primary = normalizeRead(first!.value.data);
+  let second = extra?.status === "fulfilled" ? normalizeRead(extra.value.data) : null;
   if (second && !qualityGate(primary, skill).pass && qualityGate(second, skill).pass) [primary, second] = [second, primary];
 
   let numbers: Map<number, NumberVerdict> | undefined;

@@ -231,6 +231,8 @@ select {
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
+  /* A hold must survive small finger movements, so the page doesn't pan under it. */
+  touch-action: none;
   text-align: center;
 }
 

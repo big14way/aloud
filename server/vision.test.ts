@@ -92,6 +92,13 @@ describe("read with two frames", () => {
     expect(res.speech).toContain(NUMBER_ABSTAIN);
   });
 
+  it("still reads the text when the second frame's call fails", async () => {
+    const { ctx } = setup((r) => (firstImage(r) === FRAME_A ? total("$12.50") : new Error("timeout")));
+    const res = await see(ctx, req({ skill: "read", frames: [FRAME_A, FRAME_B] }));
+    expect(res.speech).toEqual(["Total", "(number unclear)", NUMBER_ABSTAIN]);
+    expect(res.metrics.calls).toHaveLength(1);
+  });
+
   it("skips Ultra when adjudication is disabled", async () => {
     const { llm, ctx } = setup((r) => (firstImage(r) === FRAME_A ? total("$12.50") : total("$17.50")), { ENABLE_ADJUDICATION: "false" });
     const res = await see(ctx, req({ skill: "read", frames: [FRAME_A, FRAME_B] }));

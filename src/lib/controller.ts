@@ -499,7 +499,7 @@ export class Controller {
         this.say([...res.speech, `Confirmed ${p.location}.`], "live", res.metrics);
       } else if (!m.visible && m.confidence >= THRESHOLDS.trust) {
         await this.addEvent({ object_id: obj.id, kind: "missing", location: p.location, source: "vision", confidence: m.confidence, identity_confidence: null });
-        this.say([...res.speech, `I'll stop saying ${pronoun(obj.label)} ${isPlural(obj.label) ? "are" : "is"} there.`], "live", res.metrics);
+        this.say([...res.speech, `I'll stop saying ${isPlural(obj.label) ? "they are" : "it is"} there.`], "live", res.metrics);
       } else {
         this.say(res.speech, "live", res.metrics);
       }
