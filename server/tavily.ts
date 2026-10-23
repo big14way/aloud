@@ -65,15 +65,24 @@ export class Tavily {
   }
 }
 
-/** Rank results so manual-like pages come first. */
-export function rankManualResults(results: TavilyResult[], modelNumber: string): TavilyResult[] {
+const FORUM_OR_REVIEW = /ifixit|reddit|quora|forum|answers\/view|review|youtube|youtu\.be|amazon\.|ebay\.|walmart\.|bestbuy\.|tiktok|facebook/i;
+
+/**
+ * Rank results so the maker's manual and task-relevant help pages come first, and
+ * forums, reviews, shops and videos last. A page that merely mentions the model
+ * number (a spec sheet, a repair question) is not enough.
+ */
+export function rankManualResults(results: TavilyResult[], modelNumber: string, task = ""): TavilyResult[] {
   const model = modelNumber.toLowerCase().replace(/[\s\-_]/g, "");
+  const taskWords = task.toLowerCase().split(/\W+/).filter((w) => w.length > 3);
   const score = (r: TavilyResult) => {
     const hay = `${r.title} ${r.url} ${r.content}`.toLowerCase();
     let s = r.score;
-    if (hay.replace(/[\s\-_]/g, "").includes(model)) s += 1;
-    if (/manual|instruction|user guide|owner'?s guide|operating/.test(hay)) s += 0.5;
-    if (/\.pdf($|\?)/.test(r.url.toLowerCase())) s += 0.25;
+    if (model && hay.replace(/[\s\-_]/g, "").includes(model)) s += 0.4;
+    if (/manual|instruction|user guide|owner'?s|operating|how to|help\./.test(hay)) s += 0.5;
+    if (/\.pdf($|\?)/.test(r.url.toLowerCase())) s += 0.3;
+    if (taskWords.some((w) => hay.includes(w))) s += 0.4;
+    if (FORUM_OR_REVIEW.test(r.url)) s -= 0.8;
     return s;
   };
   return [...results].sort((a, b) => score(b) - score(a));

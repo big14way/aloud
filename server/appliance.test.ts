@@ -36,6 +36,7 @@ describe("Tavily client", () => {
     await t.search("acme manual");
     await t.extract(["https://acme.example/mw2041.pdf"], "defrost bread");
     expect(calls[0]).toMatchObject({ path: "/search", auth: "Bearer tvly-test", body: { query: "acme manual", search_depth: "basic", max_results: 5 } });
+    expect(calls[1]?.body.urls).toEqual(["https://acme.example/mw2041.pdf"]);
     expect(calls[1]).toMatchObject({ path: "/extract", body: { urls: ["https://acme.example/mw2041.pdf"], query: "defrost bread", chunks_per_source: 5, format: "text" } });
   });
 
@@ -46,6 +47,15 @@ describe("Tavily client", () => {
 
   it("ranks the matching manual above other pages", () => {
     expect(rankManualResults(searchResults.results, "MW-2041")[0]?.url).toBe("https://acme.example/mw2041.pdf");
+  });
+
+  it("prefers the maker's help page over a forum or spec sheet that only mentions the model", () => {
+    const live = [
+      { title: "model NN-SN966S Lost all control of the keypad", url: "https://www.ifixit.com/Answers/View/752717/model+NN-SN966S", content: "keypad problem", score: 0.62 },
+      { title: "How to use the auto or turbo defrost feature", url: "https://help.na.panasonic.com/answers/how-to-use-the-auto-or-turbo-defrost-feature-on-the-microwave-oven", content: "Defrost: press Turbo Defrost", score: 0.67 },
+      { title: "Panasonic NN-SN966S specs", url: "https://appliances.techreviewer.com/appliance-specs/panasonic-nn-sn966s-microwave", content: "specifications", score: 0.65 },
+    ];
+    expect(rankManualResults(live, "NN-SN966S", "defrost bread")[0]?.url).toContain("help.na.panasonic.com");
   });
 });
 
@@ -61,7 +71,7 @@ describe("applianceSteps", () => {
   };
 
   it("searches with the model number, extracts the manual, and asks Super for steps", async () => {
-    const tavily = new Tavily("k", fakeFetch((path) => (path === "/search" ? searchResults : { results: [{ url: "https://acme.example/mw2041.pdf", raw_content: "DEFROST: press DEFROST, set weight with dial." }] })));
+    const tavily = new Tavily("k", fakeFetch((path) => (path === "/search" ? searchResults : { results: [{ url: "https://acme.example/mw2041.pdf", raw_content: "Acme MW-2041 manual. DEFROST: press DEFROST, set weight with dial." }] })));
     const llm = new FakeLLM(() => JSON.stringify(steps));
     const res = await applianceSteps(createContext(testConfig({ TAVILY_API_KEY: "k" }), llm), req, tavily);
     const r = llm.requests[0]!;
@@ -75,6 +85,13 @@ describe("applianceSteps", () => {
       "Press the button when you're done, and I'll check with the camera.",
     ]);
     expect(res.sources[0]?.url).toBe("https://acme.example/mw2041.pdf");
+  });
+
+  it("says when the steps come from a similar model's manual", async () => {
+    const tavily = new Tavily("k", fakeFetch((path) => (path === "/search" ? searchResults : { results: [{ url: "https://acme.example/mw2050.pdf", raw_content: "MW-2050 manual. DEFROST: press DEFROST." }] })));
+    const llm = new FakeLLM(() => JSON.stringify(steps));
+    const res = await applianceSteps(createContext(testConfig(), llm), req, tavily);
+    expect(res.speech[0]).toBe("I found instructions for a similar model, so the buttons may differ from yours. There are 2 steps.");
   });
 
   it("says so when the manual doesn't cover the task", async () => {
@@ -94,7 +111,7 @@ describe("applianceSteps", () => {
   });
 
   it("builds a manual query", () => {
-    expect(buildQuery(req)).toBe("Acme MW-2041 microwave manual defrost bread");
+    expect(buildQuery(req)).toBe("Acme MW-2041 microwave owner's manual how to defrost bread");
   });
 });
 

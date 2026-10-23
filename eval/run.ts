@@ -246,10 +246,9 @@ out(`## Vision answers`);
 out();
 out(`Set: **${set.name}** (${photos.length} photos in this split)${set.synthetic ? ". These are rendered synthetic scenes, not real photos, so they show the pipeline works end to end; they are not a reliability claim." : "."}`);
 out();
-if (results.length === 0) {
-  out(live ? "Vision evaluation skipped (--no-vision)." : "Vision evaluation needs NEBIUS_API_KEY; not run.");
-} else {
-  const ok = results.filter((r) => r.status !== "error");
+/** Every vision metric for a subset of results, as table cells. */
+function visionRows(subset: PhotoResult[]): [string, string][] {
+  const ok = subset.filter((r) => r.status !== "error");
   const badShots = ok.filter((r) => r.expect === "guidance");
   const goodShots = ok.filter((r) => r.expect === "answer");
   const cers = ok.flatMap((r) => (r.cer === null ? [] : [r.cer]));
@@ -258,33 +257,42 @@ if (results.length === 0) {
   const judged = ok.filter((r) => r.unsupported).reduce((a, r) => ({ count: a.count + r.unsupported!.count, total: a.total + r.unsupported!.total }), { count: 0, total: 0 });
   const hazards = ok.filter((r) => r.hazardSaid !== null);
   const nums = ok.reduce((a, r) => ({ agreed: a.agreed + (r.numbers?.agreed ?? 0), adjudicated: a.adjudicated + (r.numbers?.adjudicated ?? 0), abstained: a.abstained + (r.numbers?.abstained ?? 0) }), { agreed: 0, adjudicated: 0, abstained: 0 });
-  const numTotal = nums.agreed + nums.adjudicated + nums.abstained;
-  const wrong = ok.reduce((a, r) => a + r.wrongNumbers.length, 0);
   const describeCosts = ok.filter((r) => r.skill === "describe").map((r) => r.cost);
   const meanDescribe = describeCosts.length ? describeCosts.reduce((a, b) => a + b, 0) / describeCosts.length : null;
+  return [
+    ["Errors (request failed)", formatRate(rate(subset.length - ok.length, subset.length))],
+    ["OCR character error rate, text photos (mean)", cers.length ? `${(100 * (cers.reduce((a, b) => a + b, 0) / cers.length)).toFixed(1)}% over ${cers.length} photos${cers.length < SMALL_SET ? ", small set" : ""}` : "n/a"],
+    ["Words read that are not on the page", formatRate(rate(inv.invented, inv.total))],
+    ["Key-fact recall (photos that should be answered)", formatRate(rate(facts.hit, facts.total))],
+    ["Unsupported sentences in descriptions (judged by Nemotron 3 Ultra)", judged.total ? formatRate(rate(judged.count, judged.total)) : "n/a"],
+    ["Correct abstention on bad shots (guidance only)", formatRate(rate(badShots.filter((r) => r.status === "guidance" || r.status === "empty").length, badShots.length))],
+    ["Answered when it should (good shots)", formatRate(rate(goodShots.filter((r) => r.status === "answered").length, goodShots.length))],
+    ['Hazard mentioned first ("Careful")', formatRate(rate(hazards.filter((r) => r.hazardSaid).length, hazards.length))],
+    ["Forbidden-claim violations", `${ok.reduce((a, r) => a + r.forbidden.length, 0)} (target 0)`],
+    ["Numbers spoken that are not on the page", `${ok.reduce((a, r) => a + r.wrongNumbers.length, 0)} (target 0)`],
+    ["Number lines: two frames agreed / Ultra adjudicated / abstained", `${nums.agreed} / ${nums.adjudicated} / ${nums.abstained}`],
+    ["Server latency p50 / p95", `${ms(percentile(ok.map((r) => r.ms), 50))} / ${ms(percentile(ok.map((r) => r.ms), 95))}`],
+    ["Mean cost per request", `$${(ok.reduce((a, r) => a + r.cost, 0) / Math.max(1, ok.length)).toFixed(5)}`],
+    ["Perception cost per hour of use (120 Describe presses)", meanDescribe === null ? "n/a" : `$${(meanDescribe * 120).toFixed(3)}`],
+  ];
+}
 
-  out(`| Metric | Result |`);
-  out(`|---|---|`);
-  out(`| Errors (request failed) | ${formatRate(rate(results.length - ok.length, results.length))} |`);
-  out(`| OCR character error rate, text photos (mean) | ${cers.length ? `${(100 * (cers.reduce((a, b) => a + b, 0) / cers.length)).toFixed(1)}% over ${cers.length} photos${cers.length < SMALL_SET ? ", small set" : ""}` : "n/a"} |`);
-  out(`| Words read that are not on the page | ${formatRate(rate(inv.invented, inv.total))} |`);
-  out(`| Key-fact recall (photos that should be answered) | ${formatRate(rate(facts.hit, facts.total))} |`);
-  out(`| Unsupported sentences in descriptions (judged by Nemotron 3 Ultra) | ${judged.total ? formatRate(rate(judged.count, judged.total)) : "n/a"} |`);
-  out(`| Correct abstention on bad shots (guidance only) | ${formatRate(rate(badShots.filter((r) => r.status === "guidance" || r.status === "empty").length, badShots.length))} |`);
-  out(`| Answered when it should (good shots) | ${formatRate(rate(goodShots.filter((r) => r.status === "answered").length, goodShots.length))} |`);
-  out(`| Hazard mentioned first ("Careful") | ${formatRate(rate(hazards.filter((r) => r.hazardSaid).length, hazards.length))} |`);
-  out(`| Forbidden-claim violations | ${ok.reduce((a, r) => a + r.forbidden.length, 0)} (target 0) |`);
-  out(`| Numbers spoken that are not on the page | ${wrong} (target 0) |`);
-  out(`| Number lines: two frames agreed / Ultra adjudicated / abstained | ${nums.agreed} / ${nums.adjudicated} / ${nums.abstained} of ${numTotal} |`);
-  out(`| Server latency p50 / p95 (press-to-first-word on a phone adds capture and upload) | ${ms(percentile(ok.map((r) => r.ms), 50))} / ${ms(percentile(ok.map((r) => r.ms), 95))} |`);
-  out(`| Mean cost per request | $${(ok.reduce((a, r) => a + r.cost, 0) / Math.max(1, ok.length)).toFixed(5)} |`);
-  out(`| Perception cost per hour of use (120 Describe presses) | ${meanDescribe === null ? "n/a" : `$${(meanDescribe * 120).toFixed(3)}`} |`);
+if (results.length === 0) {
+  out(live ? "Vision evaluation skipped (--no-vision)." : "Vision evaluation needs NEBIUS_API_KEY; not run.");
+} else {
+  const splitOf = new Map(photos.map((p) => [p.id, p.split]));
+  const columns = splits.map((which) => ({ which, rows: visionRows(results.filter((r) => splitOf.get(r.id) === which)) }));
+  out(`Prompts and rules were tuned on dev only. Latency is measured on the server running the evaluation; on a phone, add capture and upload.`);
+  out();
+  out(`| Metric | ${columns.map((c) => (c.which === "dev" ? "Dev" : "Held-out")).join(" | ")} |`);
+  out(`|---|${columns.map(() => "---").join("|")}|`);
+  columns[0]!.rows.forEach(([metric], i) => out(`| ${metric} | ${columns.map((c) => c.rows[i]![1]).join(" | ")} |`));
   out();
   out(`### Per photo`);
   out();
-  out(`| Photo | Skill | Status | ms | What Aloud said |`);
-  out(`|---|---|---|---|---|`);
-  for (const r of results) out(`| ${r.id} | ${r.skill} | ${r.status} | ${r.ms} | ${r.speech.join(" ").replace(/\|/g, "/")} |`);
+  out(`| Photo | Split | Skill | Status | ms | What Aloud said |`);
+  out(`|---|---|---|---|---|---|`);
+  for (const r of results) out(`| ${r.id} | ${splitOf.get(r.id)} | ${r.skill} | ${r.status} | ${r.ms} | ${r.speech.join(" ").replace(/\|/g, "/")} |`);
 }
 out();
 
