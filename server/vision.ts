@@ -283,7 +283,7 @@ async function stepCheck(ctx: Ctx, req: SeeRequest, meter: Meter): Promise<SeeRe
   return { ...common, status: "answered", speech, confidence: s.confidence, flags: [] };
 }
 
-const PLAN_SYSTEM = `You help a person with a cognitive disability do one everyday task, one small step at a time.
+export const PLAN_SYSTEM = `You help a person with a cognitive disability do one everyday task, one small step at a time.
 Use only the things listed in the scene. Make at most 5 steps. Each step is one action in at most 12 easy words.
 If something is hot or sharp, say "carefully". Never involve roads, medicine, or electrics beyond a normal switch.
 summary: one short sentence about the plan. encouragement: one short warm sentence.

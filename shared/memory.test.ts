@@ -6,7 +6,6 @@ import {
   isPlural,
   isTrusted,
   keepsStatus,
-  locationPhrase,
   matchObjects,
   parsePlacement,
   whenPhrase,
@@ -118,11 +117,6 @@ describe("matching and parsing", () => {
     expect(parsePlacement("I left my wallet in the car.")).toEqual({ object: "wallet", location: "in the car" });
     expect(parsePlacement("put the remote down next to the TV")).toEqual({ object: "remote", location: "next to the TV" });
     expect(parsePlacement("where did I put my keys")).toBeNull();
-  });
-  it("builds location phrases", () => {
-    expect(locationPhrase("on", "shelf", "hall")).toBe("on the shelf in the hall");
-    expect(locationPhrase("in", "top drawer", "")).toBe("in the top drawer");
-    expect(locationPhrase("none", "", "kitchen")).toBe("in the kitchen");
   });
   it("knows plural object names", () => {
     expect(isPlural("house keys")).toBe(true);

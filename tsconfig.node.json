@@ -1,10 +1,22 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "lib": ["ES2023"],
+    "lib": [
+      "ES2023"
+    ],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "types": ["node"]
+    "types": [
+      "node"
+    ]
   },
-  "include": ["server", "api", "shared", "eval", "scripts", "vite.config.ts"]
+  "include": [
+    "server",
+    "api",
+    "shared",
+    "eval",
+    "scripts",
+    "distill",
+    "vite.config.ts"
+  ]
 }

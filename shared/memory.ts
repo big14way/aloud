@@ -277,13 +277,3 @@ export function parsePlacement(utterance: string): { object: string; location: s
   if (!object || !location) return null;
   return { object, location };
 }
-
-/** "on hall shelf" -> "on the hall shelf" unless it already has a determiner. */
-export function locationPhrase(preposition: string, surface: string, place: string): string {
-  const det = (s: string) => (/^(the|my|a|an|your|our)\s/i.test(s) ? s : `the ${s}`);
-  const parts: string[] = [];
-  const prep = preposition === "none" ? "" : preposition;
-  if (surface) parts.push(`${prep || "on"} ${det(surface)}`);
-  if (place) parts.push(`${surface ? "in" : prep || "in"} ${det(place)}`);
-  return parts.join(" ").trim();
-}

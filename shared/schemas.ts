@@ -123,15 +123,6 @@ export const SimplePlan = z.object({
 });
 export type SimplePlan = z.infer<typeof SimplePlan>;
 
-/** Memory extraction from an utterance such as "I'm putting my keys on the hall shelf". */
-export const PlacementExtract = z.object({
-  object: z.string(),
-  preposition: z.enum(["on", "in", "under", "next to", "behind", "at", "none"]),
-  surface: z.string(),
-  place: z.string(),
-});
-export type PlacementExtract = z.infer<typeof PlacementExtract>;
-
 /** JSON Schema for a response_format, without the $schema key some servers reject. */
 export function jsonSchemaFor(schema: z.ZodType): Record<string, unknown> {
   const out = z.toJSONSchema(schema) as Record<string, unknown>;

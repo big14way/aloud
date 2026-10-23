@@ -10,7 +10,7 @@ import { chatJson } from "./llm.js";
 
 const ShapeOut = z.object({ sentences: z.array(z.string()) });
 
-const SHAPE_SYSTEM = `You rewrite short spoken answers for a person with a cognitive disability.
+export const SHAPE_SYSTEM = `You rewrite short spoken answers for a person with a cognitive disability.
 Rules:
 - Easy, everyday words. Every sentence has at most 15 words.
 - Keep every fact. Add nothing that is not in the input.
