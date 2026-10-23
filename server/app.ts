@@ -7,12 +7,14 @@ import {
   type ErrorKind,
   type ErrorResponse,
   type HealthResponse,
+  RouteRequest,
   SeeRequest,
   ShapeRequest,
   type ShapeResponse,
 } from "../shared/api.js";
 import { createContext, type Ctx, Meter } from "./context.js";
 import { ModelError } from "./llm.js";
+import { route } from "./route.js";
 import { shapeEasy } from "./shape.js";
 import { see } from "./vision.js";
 
@@ -42,12 +44,12 @@ export function createApp(ctx: Ctx = createContext()) {
   const app = new Hono().basePath("/api");
   app.use("*", bodyLimit({ maxSize: 4 * 1024 * 1024, onError: (c) => fail(c, "bad_request", 413, { detail: "body too large" }) }));
 
-  /** Shared guard for routes that spend model tokens. */
-  const guard = (c: Context): Response | null => {
-    if (!ctx.cfg.nebiusApiKey) return fail(c, "not_configured", 503);
+  /** Shared guard for routes that spend model tokens. `needsModel: false` routes have a rules fallback. */
+  const guard = (c: Context, needsModel = true): Response | null => {
+    if (needsModel && !ctx.cfg.nebiusApiKey) return fail(c, "not_configured", 503);
     const { session, ip } = clientKey(c);
     if (!ctx.sessions.allow(session) || !ctx.ips.allow(ip)) return fail(c, "session_limit", 429);
-    if (ctx.spend.exhausted()) return fail(c, "budget", 429);
+    if (needsModel && ctx.spend.exhausted()) return fail(c, "budget", 429);
     return null;
   };
 
@@ -105,6 +107,16 @@ export function createApp(ctx: Ctx = createContext()) {
     } catch (err) {
       return modelFailure(c, err, "see");
     }
+  });
+
+  app.post("/route", async (c) => {
+    const blocked = guard(c, false);
+    if (blocked) return blocked;
+    const parsed = await parse(c, RouteRequest);
+    if (!parsed.ok) return parsed.res;
+    const res = await route(ctx, parsed.data);
+    log({ route: "route", skill: res.skill, outcome: res.outcome, lane: res.lane, ms: res.metrics.total_ms, cost_usd: res.metrics.cost_usd });
+    return c.json(res);
   });
 
   app.post("/shape", async (c) => {
