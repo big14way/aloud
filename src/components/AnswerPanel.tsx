@@ -48,7 +48,7 @@ export function AnswerPanel({ text, liveText, mode, source, metrics, heard, simu
             {source ? SOURCE_LABEL[source] : ""}
             {metrics ? ` · ${seconds(metrics.total_ms)} · $${metrics.cost_usd.toFixed(4)}` : ""}
           </summary>
-          {simulatedSecondFrame && <p>Sample mode: the second frame for number checks is the same photo, shifted slightly.</p>}
+          {simulatedSecondFrame && <p>Sample mode: the second frame for number checks is the same scene rendered with a small shift, like a moving hand.</p>}
           {metrics && (
             <ul>
               {metrics.calls.map((c, i) => (

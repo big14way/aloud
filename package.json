@@ -15,7 +15,9 @@
     "preview": "vite preview",
     "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.node.json",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "samples": "node scripts/make-samples.mjs",
+    "record-samples": "tsx scripts/record-samples.ts"
   },
   "dependencies": {
     "hono": "^4.13.13",

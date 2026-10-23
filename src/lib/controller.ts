@@ -82,6 +82,7 @@ export class Controller {
   private lastFrames: string[] = [];
   private lastSkill: "describe" | "read" | "what_is" | null = null;
   private sampleFrame: string | null = null;
+  private sampleFrame2: string | null = null;
   private unlocked = false;
 
   state: UiState = {
@@ -166,14 +167,18 @@ export class Controller {
   async useSample(sample: Sample | null): Promise<void> {
     if (!sample) {
       this.sampleFrame = null;
+      this.sampleFrame2 = null;
       this.set({ sample: null, simulatedSecondFrame: false });
       return;
     }
     // The camera is released while a sample photo stands in for it.
     this.stopCamera();
-    const raw = await sampleDataUrl(sample);
-    const img = await loadImage(raw);
-    this.sampleFrame = encodeFrame(img, img.naturalWidth, img.naturalHeight);
+    const toFrame = async (file: string) => {
+      const img = await loadImage(await sampleDataUrl(file));
+      return encodeFrame(img, img.naturalWidth, img.naturalHeight);
+    };
+    this.sampleFrame = await toFrame(sample.file);
+    this.sampleFrame2 = await toFrame(`frame2/${sample.file}`).catch(() => null);
     this.set({ sample, simulatedSecondFrame: false });
     this.say([`Sample photo: ${sample.title}. Press the button, or choose a skill.`]);
   }
@@ -195,7 +200,7 @@ export class Controller {
     if (this.sampleFrame) {
       if (count === 1) return [this.sampleFrame];
       this.set({ simulatedSecondFrame: true });
-      return [this.sampleFrame, await simulatedSecondFrame(this.sampleFrame)];
+      return [this.sampleFrame, this.sampleFrame2 ?? (await simulatedSecondFrame(this.sampleFrame))];
     }
     this.set({ simulatedSecondFrame: false });
     if (!(await this.startCamera())) {

@@ -41,9 +41,10 @@ export async function cachedAnswer(sampleId: string, skill: SeeSkill, mode: Mode
   return all[cacheKey(sampleId, skill, mode)] ?? all[cacheKey(sampleId, skill, "standard")] ?? null;
 }
 
-export async function sampleDataUrl(sample: Sample): Promise<string> {
-  const res = await fetch(`/samples/${sample.file}`);
-  if (!res.ok) throw new Error(`Sample ${sample.id} is missing`);
+/** Load a file from /samples (e.g. "letter.jpg" or "frame2/letter.jpg") as a data URL. */
+export async function sampleDataUrl(file: string): Promise<string> {
+  const res = await fetch(`/samples/${file}`);
+  if (!res.ok) throw new Error(`Sample ${file} is missing`);
   const blob = await res.blob();
   return new Promise((resolve, reject) => {
     const reader = new FileReader();

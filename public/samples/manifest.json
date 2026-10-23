@@ -1,0 +1,95 @@
+{
+  "samples": [
+    {
+      "id": "letter",
+      "title": "A letter",
+      "alt": "A printed letter on a wooden table.",
+      "suggested": "read",
+      "file": "letter.jpg"
+    },
+    {
+      "id": "letter_cut_off",
+      "title": "Letter, cut off",
+      "alt": "The same letter, with its right side outside the frame.",
+      "suggested": "read",
+      "file": "letter_cut_off.jpg"
+    },
+    {
+      "id": "letter_dark",
+      "title": "Letter, too dark",
+      "alt": "The letter in near darkness.",
+      "suggested": "read",
+      "file": "letter_dark.jpg"
+    },
+    {
+      "id": "receipt",
+      "title": "A receipt",
+      "alt": "A shop receipt with a total of 12.50.",
+      "suggested": "read",
+      "file": "receipt.jpg"
+    },
+    {
+      "id": "receipt_blurry",
+      "title": "Receipt, blurry",
+      "alt": "The receipt, badly out of focus.",
+      "suggested": "read",
+      "file": "receipt_blurry.jpg"
+    },
+    {
+      "id": "price_tag",
+      "title": "A price tag",
+      "alt": "A yellow shelf price tag.",
+      "suggested": "read",
+      "file": "price_tag.jpg"
+    },
+    {
+      "id": "can_label",
+      "title": "A tin of tomatoes",
+      "alt": "A tin of chopped tomatoes.",
+      "suggested": "what_is",
+      "file": "can_label.jpg"
+    },
+    {
+      "id": "kitchen",
+      "title": "Kitchen counter",
+      "alt": "A kettle, a mug, and a knife on a chopping board.",
+      "suggested": "describe",
+      "file": "kitchen.jpg"
+    },
+    {
+      "id": "room",
+      "title": "Untidy room",
+      "alt": "A bedroom with clothes and books on the floor and a laundry basket.",
+      "suggested": "plan",
+      "file": "room.jpg"
+    },
+    {
+      "id": "keys_shelf",
+      "title": "Keys on a shelf",
+      "alt": "A key ring with two keys and a pink tag on a shelf.",
+      "suggested": "find",
+      "file": "keys_shelf.jpg"
+    },
+    {
+      "id": "microwave",
+      "title": "Microwave panel",
+      "alt": "A microwave with its control panel and a model label.",
+      "suggested": "label",
+      "file": "microwave.jpg"
+    },
+    {
+      "id": "sign",
+      "title": "Library sign",
+      "alt": "A blue library sign with opening hours.",
+      "suggested": "read",
+      "file": "sign.jpg"
+    },
+    {
+      "id": "crossing",
+      "title": "Street crossing",
+      "alt": "A zebra crossing with a traffic light.",
+      "suggested": "describe",
+      "file": "crossing.jpg"
+    }
+  ]
+}
