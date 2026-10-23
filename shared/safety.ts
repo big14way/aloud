@@ -18,6 +18,8 @@ const TRAFFIC_INTENT = [
   /\b(can|should|may)\s+i\s+(cross|go now|walk now|go across)\b/i,
   /\bis\s+(the\s+)?(road|street|traffic|way)\s+(clear|safe|empty)\b/i,
   /\b(any|are there)\s+(cars|traffic|vehicles)\s+coming\b/i,
+  /\b(is|are|has)\s+(the\s+)?(traffic\s+|pedestrian\s+|crossing\s+|walk\s+)?(light|lights|signal|signals|sign|man)\s+(gone\s+|turned\s+|changed\s+)?(green|red|amber|on|lit|showing|changed)\b/i,
+  /\bwhat\s+colou?r\s+is\s+(the\s+)?(traffic\s+|pedestrian\s+|crossing\s+)?(light|signal)\b/i,
 ];
 
 const DOSING_INTENT = [
@@ -66,6 +68,10 @@ const TRAFFIC_CLAIM = [
   /\btraffic\s+(is|has)\s+(clear|light|stopped|cleared)\b/i,
   /\b(road|street)\s+is\s+(clear|empty|safe)\b/i,
   /\byou\s+can\s+(cross|go|walk)\b/i,
+  // A signal's colour or state is as good as a crossing judgement to someone who can't check it.
+  /\b(traffic|pedestrian|crossing|walk)\s+(light|signal)s?\b[^.]*\b(green|red|amber|yellow|walk|go|stop|lit)\b/i,
+  /\b(green|red|amber)\s+(light|man|signal|figure)\b/i,
+  /\b(light|signal)\s+(is|shows|turns?|turned)\s+(green|red|amber|yellow)\b/i,
 ];
 
 /** True when model text makes a traffic-safety judgement Aloud must never make. */

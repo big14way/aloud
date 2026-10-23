@@ -139,6 +139,7 @@ export function findQuery(utterance: string): string {
 function normalizeName(s: string): string {
   return s
     .toLowerCase()
+    .replace(/['’](s|re|ve|ll|d|m)\b/g, "")
     .replace(/\b(my|the|a|an|our|his|her|their)\b/g, " ")
     .replace(/[^\p{L}\p{N} ]+/gu, " ")
     .replace(/\s+/g, " ")
@@ -255,7 +256,12 @@ const PREPOSITIONS = ["next to", "on top of", "underneath", "under", "behind", "
  */
 export function parsePlacement(utterance: string): { object: string; location: string } | null {
   const text = utterance.trim().replace(/[.!?]+$/, "");
-  const verb = /\b(?:i'?m|i am|i'll|i will|i've|i have|just)?\s*(?:putting|put|placing|placed|leaving|left|setting|set|dropping|dropped|hanging|hung|keeping|storing|stored)\s+(?:down\s+)?(.+)$/i.exec(text);
+  const verb = /\b(?:i'?m|i am|i'll|i will|i've|i have|just)?\s*(?:putting|put|placing|placed|leaving|leave|left|setting|dropping|dropped|hanging|hung|keeping|storing|stored)\s+(?:down\s+)?(.+)$/i.exec(text);
+  // "My keys are on the kitchen counter now" states a placement too.
+  const stated = /^(?:my |the |our )?([\p{L} ]+?)\s+(?:is|are)\s+(?:now\s+)?((?:on|in|under|next to|behind|beside|inside|by|at)\s.+?)(?:\s+now)?$/iu.exec(text);
+  if (!verb?.[1] && stated?.[1] && stated[2] && !/^(where|what|which|who|how|is|are)\b/i.test(stated[1])) {
+    return { object: stated[1].trim(), location: stated[2].trim() };
+  }
   if (!verb?.[1]) return null;
   const rest = verb[1];
   const lower = rest.toLowerCase();

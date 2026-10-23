@@ -1,7 +1,7 @@
 import type { RouteRequest, RouteResponse, RouteSkill } from "../shared/api.js";
 import { type RouteDecision, refusalFor, routeByRules, validateRoute } from "../shared/router.js";
 import { type Ctx, Meter, withTextLane } from "./context.js";
-import type { Tool } from "./llm.js";
+import type { ChatRequest, Tool } from "./llm.js";
 
 // Intent routing with tool calling on Nemotron 3.5 Lightning (or the distilled
 // fast lane). Flat, typed arguments; code validates every call.
@@ -82,38 +82,40 @@ export function decisionFromToolCall(name: string, rawArgs: string, known: strin
   return validateRoute(skill, { object: str("object"), location: str("location"), label: str("label"), task: str("task"), goal: str("goal") }, known);
 }
 
+/** One routing call on a given model lane. Throws if the model gives no usable tool call. */
+export async function routeWithModel(ctx: Ctx, req: RouteRequest, lane: Pick<ChatRequest, "lane" | "model">, meter: Meter): Promise<RouteDecision> {
+  const res = await ctx.llm.chat({
+    ...lane,
+    messages: [
+      { role: "system", content: ROUTE_SYSTEM },
+      { role: "user", content: `${stateNote(req)}\nUser said: "${req.utterance}"` },
+    ],
+    tools: ROUTE_TOOLS,
+    toolChoice: "required",
+    temperature: 0.2,
+    maxTokens: 200,
+    reasoningEffort: "none",
+  });
+  meter.add([res.metric]);
+  const call = res.toolCalls[0];
+  const decision = call ? decisionFromToolCall(call.name, call.arguments, req.known_objects ?? []) : null;
+  if (!decision) throw new Error("no usable tool call");
+  return decision;
+}
+
 export async function route(ctx: Ctx, req: RouteRequest): Promise<RouteResponse> {
   const meter = new Meter(ctx.spend);
-  const known = req.known_objects ?? [];
   // Refusals are decided in code before any model sees the request.
   const refusal = refusalFor(req.utterance);
   if (refusal) return { ok: true, ...refusal, lane: "rules", metrics: meter.summary() };
 
   if (ctx.cfg.nebiusApiKey && !ctx.spend.exhausted()) {
     try {
-      const result = await withTextLane(ctx, async (lane) => {
-        const res = await ctx.llm.chat({
-          ...lane,
-          messages: [
-            { role: "system", content: ROUTE_SYSTEM },
-            { role: "user", content: `${stateNote(req)}\nUser said: "${req.utterance}"` },
-          ],
-          tools: ROUTE_TOOLS,
-          toolChoice: "required",
-          temperature: 0.2,
-          maxTokens: 200,
-          reasoningEffort: "none",
-        });
-        meter.add([res.metric]);
-        const call = res.toolCalls[0];
-        const decision = call ? decisionFromToolCall(call.name, call.arguments, known) : null;
-        if (!decision) throw new Error("no usable tool call");
-        return { decision, lane: lane.lane };
-      });
+      const result = await withTextLane(ctx, async (lane) => ({ decision: await routeWithModel(ctx, req, lane, meter), lane: lane.lane }));
       return { ok: true, ...result.decision, lane: result.lane === "fastlane" ? "fastlane" : "fast", metrics: meter.summary() };
     } catch {
       // Fall through to the rules router.
     }
   }
-  return { ok: true, ...routeByRules(req.utterance, known), lane: "rules", metrics: meter.summary() };
+  return { ok: true, ...routeByRules(req.utterance, req.known_objects ?? []), lane: "rules", metrics: meter.summary() };
 }

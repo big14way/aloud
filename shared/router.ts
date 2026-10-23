@@ -25,8 +25,13 @@ function clean(s: string | undefined): string {
 const RULES: ReadonlyArray<{ re: RegExp; skill: RouteSkill; args?: (m: RegExpExecArray, u: string) => RouteArgs }> = [
   { re: /^\s*(stop|quiet|be quiet|shush|cancel|enough)\b/i, skill: "stop" },
   { re: /\b(repeat|say (that|it) again|what did you say|pardon)\b/i, skill: "repeat" },
-  { re: /\blook (harder|closer|again carefully)\b/i, skill: "look_harder" },
-  { re: /\bremember (?:this|these|it|that) as (?:my |our |the )?(.+)$/i, skill: "enrol_object", args: (m) => ({ label: clean(m[1]) }) },
+  { re: /\blook (harder|closer|again)\b/i, skill: "look_harder" },
+  { re: /\b(?:remember|save|learn|store) (?:this|these|it|that) as (?:my |our |the )?(.+)$/i, skill: "enrol_object", args: (m) => ({ label: clean(m[1]) }) },
+  {
+    re: /^\s*(?:set|turn|switch) (?:on |off )?(?:the |this |my )?(?:oven|microwave|washing machine|washer|dryer|heater|thermostat|dishwasher|cooker|hob|air conditioner|fan)\b.*$/i,
+    skill: "appliance_help",
+    args: (m) => ({ task: clean(m[0]) }),
+  },
   {
     re: /\b(?:help me|how do i|show me how to|walk me through(?: how to)?)\s+(?:to\s+)?((?:use|start|set|turn on|switch on|run|operate|work|program|defrost|heat|wash|dry)\b.*)$/i,
     skill: "appliance_help",
@@ -38,11 +43,14 @@ const RULES: ReadonlyArray<{ re: RegExp; skill: RouteSkill; args?: (m: RegExpExe
     args: (m) => ({ goal: clean(m[1]) }),
   },
   { re: /\bwhat should i do (first|next)\b/i, skill: "plan_task", args: () => ({ goal: "" }) },
-  { re: /\b(i'?ve got|i have got|i took|i'?m taking|i picked up|i'?ve picked up|i grabbed)\s+(?:my |the )?(.+)$/i, skill: "picked_up", args: (m) => ({ object: clean(m[2]) }) },
+  { re: /\b(i'?ve got|i have got|(?:i\s+)?took|i'?m taking|(?:i\s+)?picked up|i'?ve picked up|(?:i\s+)?grabbed)\s+(?:my |the )?(.+)$/i, skill: "picked_up", args: (m) => ({ object: clean(m[2]) }) },
   { re: /\b(where(?:'s| is| are| did i (?:put|leave)| have i (?:put|left))|find my|find the|have you seen|look for)\b/i, skill: "find", args: (_m, u) => ({ object: findQuery(u) }) },
-  { re: /\b(read|what does (?:it|this|that) say|what'?s written|what is written)\b/i, skill: "read" },
-  { re: /\b(what(?:'s| is) (?:this|that|it)|what am i holding|identify (?:this|it))\b/i, skill: "what_is" },
-  { re: /\b(describe|what(?:'s| is) (?:in front|around|here)|what do you see|look around|where am i)\b/i, skill: "describe" },
+  { re: /\b(read|what does (?:it|this|that) say|what'?s written|what is written|what(?:'s| is) the (?:price|total|date|time|number|amount))\b/i, skill: "read" },
+  { re: /\b(what(?:'s| is) (?:this|that|it)|what am i holding|identify (?:this|it)|which \w+ is (?:this|it))\b/i, skill: "what_is" },
+  {
+    re: /\b(describe|what(?:'s| is) (?:in front|around|here|on (?:the|my))|what do you see|look around|where am i|(?:anything|something) in (?:my|the) way)\b/i,
+    skill: "describe",
+  },
   { re: /\b(help|what can you do|commands)\b/i, skill: "help" },
 ];
 

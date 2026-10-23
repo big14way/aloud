@@ -7,6 +7,9 @@ describe("checkUtterance", () => {
     "can I cross now",
     "Is the road clear?",
     "are there cars coming",
+    "is the light green",
+    "has the signal turned green?",
+    "what colour is the traffic light",
   ])("refuses traffic judgement: %s", (u) => expect(checkUtterance(u)).toBe("traffic"));
 
   it.each([
@@ -46,6 +49,11 @@ describe("output checks", () => {
     expect(makesTrafficClaim("The road is clear")).toBe(true);
     expect(makesTrafficClaim("It looks safe to cross")).toBe(true);
     expect(makesTrafficClaim("a pedestrian crossing ahead")).toBe(false);
+    expect(makesTrafficClaim("a traffic light showing green")).toBe(true);
+    expect(makesTrafficClaim("The light is green")).toBe(true);
+    expect(makesTrafficClaim("a red man on the signal")).toBe(true);
+    expect(makesTrafficClaim("a traffic light at 2 o'clock")).toBe(false);
+    expect(makesTrafficClaim("a traffic light on the corner")).toBe(false);
   });
   it("spots medicine labels", () => {
     expect(looksLikeMedicine("Paracetamol 500 mg tablets")).toBe(true);

@@ -19,6 +19,15 @@ describe("routeByRules", () => {
     ["stop", "stop", {}],
     ["look harder", "look_harder", {}],
     ["what can you do", "help", {}],
+    ["anything in my way?", "describe", {}],
+    ["what's the price", "read", {}],
+    ["which tin is this", "what_is", {}],
+    ["save this as my wallet", "enrol_object", { label: "wallet" }],
+    ["grabbed my bus pass", "picked_up", { object: "bus pass" }],
+    ["I'll leave my bus pass by the front door", "remember_placement", { object: "bus pass", location: "by the front door" }],
+    ["keys are on the kitchen counter now", "remember_placement", { object: "keys", location: "on the kitchen counter" }],
+    ["set the oven to 180 degrees", "appliance_help", { task: "set the oven to 180 degrees" }],
+    ["can you look again more carefully", "look_harder", {}],
   ])("%s -> %s", (utterance, skill, args) => {
     const d = routeByRules(utterance, ["keys", "wallet"]);
     expect(d.skill).toBe(skill);

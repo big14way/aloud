@@ -105,6 +105,8 @@ describe("matching and parsing", () => {
   it("strips question words from find queries", () => {
     expect(findQuery("Where did I put my car keys?")).toBe("car keys");
     expect(findQuery("have you seen the wallet")).toBe("wallet");
+    expect(findQuery("where's my wallet?")).toBe("wallet");
+    expect(findQuery("Where’re my keys")).toBe("keys");
   });
   it("matches labels, aliases and plurals", () => {
     expect(matchObjects("house key", [keys, carKeys]).map((o) => o.id)).toEqual(["k"]);

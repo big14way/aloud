@@ -1,0 +1,567 @@
+{
+ "name": "Spoken requests (synthetic)",
+ "utterances": [
+  {
+   "utterance": "what's in front of me",
+   "skill": "describe",
+   "args": {},
+   "split": "dev"
+  },
+  {
+   "utterance": "describe the room",
+   "skill": "describe",
+   "args": {},
+   "split": "heldout"
+  },
+  {
+   "utterance": "what do you see",
+   "skill": "describe",
+   "args": {},
+   "split": "dev"
+  },
+  {
+   "utterance": "where am I",
+   "skill": "describe",
+   "args": {},
+   "split": "heldout"
+  },
+  {
+   "utterance": "tell me what's around me",
+   "skill": "describe",
+   "args": {},
+   "split": "dev"
+  },
+  {
+   "utterance": "anything in my way?",
+   "skill": "describe",
+   "args": {},
+   "split": "dev"
+  },
+  {
+   "utterance": "look around",
+   "skill": "describe",
+   "args": {},
+   "split": "heldout"
+  },
+  {
+   "utterance": "what's on the table",
+   "skill": "describe",
+   "args": {},
+   "split": "dev"
+  },
+  {
+   "utterance": "read this",
+   "skill": "read",
+   "args": {},
+   "split": "heldout"
+  },
+  {
+   "utterance": "what does this say",
+   "skill": "read",
+   "args": {},
+   "split": "dev"
+  },
+  {
+   "utterance": "read the letter",
+   "skill": "read",
+   "args": {},
+   "split": "dev"
+  },
+  {
+   "utterance": "can you read the label for me",
+   "skill": "read",
+   "args": {},
+   "split": "heldout"
+  },
+  {
+   "utterance": "what's written on this",
+   "skill": "read",
+   "args": {},
+   "split": "dev"
+  },
+  {
+   "utterance": "how much is this receipt",
+   "skill": "read",
+   "args": {},
+   "split": "heldout"
+  },
+  {
+   "utterance": "read me the sign",
+   "skill": "read",
+   "args": {},
+   "split": "dev"
+  },
+  {
+   "utterance": "what's the price",
+   "skill": "read",
+   "args": {},
+   "split": "dev"
+  },
+  {
+   "utterance": "what is this",
+   "skill": "what_is",
+   "args": {},
+   "split": "heldout"
+  },
+  {
+   "utterance": "what am I holding",
+   "skill": "what_is",
+   "args": {},
+   "split": "dev"
+  },
+  {
+   "utterance": "identify this",
+   "skill": "what_is",
+   "args": {},
+   "split": "heldout"
+  },
+  {
+   "utterance": "what's this thing",
+   "skill": "what_is",
+   "args": {},
+   "split": "dev"
+  },
+  {
+   "utterance": "which tin is this",
+   "skill": "what_is",
+   "args": {},
+   "split": "dev"
+  },
+  {
+   "utterance": "is this the soup or the beans",
+   "skill": "what_is",
+   "args": {},
+   "split": "heldout"
+  },
+  {
+   "utterance": "where are my keys",
+   "skill": "find",
+   "args": {
+    "object": "keys"
+   },
+   "split": "dev"
+  },
+  {
+   "utterance": "where did I put my wallet",
+   "skill": "find",
+   "args": {
+    "object": "wallet"
+   },
+   "split": "heldout"
+  },
+  {
+   "utterance": "have you seen my glasses",
+   "skill": "find",
+   "args": {
+    "object": "glasses"
+   },
+   "split": "dev"
+  },
+  {
+   "utterance": "find my phone charger",
+   "skill": "find",
+   "args": {
+    "object": "charger"
+   },
+   "split": "dev"
+  },
+  {
+   "utterance": "where's the remote",
+   "skill": "find",
+   "args": {
+    "object": "remote"
+   },
+   "split": "heldout"
+  },
+  {
+   "utterance": "I can't find my house keys",
+   "skill": "find",
+   "args": {
+    "object": "house keys"
+   },
+   "split": "dev"
+  },
+  {
+   "utterance": "any idea where my bus pass is",
+   "skill": "find",
+   "args": {
+    "object": "bus pass"
+   },
+   "split": "heldout"
+  },
+  {
+   "utterance": "look for my wallet",
+   "skill": "find",
+   "args": {
+    "object": "wallet"
+   },
+   "split": "dev"
+  },
+  {
+   "utterance": "I'm putting my keys on the hall shelf",
+   "skill": "remember_placement",
+   "args": {
+    "object": "keys",
+    "location": "hall shelf"
+   },
+   "split": "dev"
+  },
+  {
+   "utterance": "I left my wallet in the car",
+   "skill": "remember_placement",
+   "args": {
+    "object": "wallet",
+    "location": "car"
+   },
+   "split": "heldout"
+  },
+  {
+   "utterance": "putting the remote next to the TV",
+   "skill": "remember_placement",
+   "args": {
+    "object": "remote",
+    "location": "TV"
+   },
+   "split": "dev"
+  },
+  {
+   "utterance": "my glasses are going in the top drawer",
+   "skill": "remember_placement",
+   "args": {
+    "object": "glasses",
+    "location": "top drawer"
+   },
+   "split": "heldout"
+  },
+  {
+   "utterance": "I'll leave my bus pass by the front door",
+   "skill": "remember_placement",
+   "args": {
+    "object": "bus pass",
+    "location": "front door"
+   },
+   "split": "dev"
+  },
+  {
+   "utterance": "keys are on the kitchen counter now",
+   "skill": "remember_placement",
+   "args": {
+    "object": "keys",
+    "location": "kitchen counter"
+   },
+   "split": "dev"
+  },
+  {
+   "utterance": "I took my wallet",
+   "skill": "picked_up",
+   "args": {
+    "object": "wallet"
+   },
+   "split": "heldout"
+  },
+  {
+   "utterance": "I've got my keys",
+   "skill": "picked_up",
+   "args": {
+    "object": "keys"
+   },
+   "split": "dev"
+  },
+  {
+   "utterance": "I picked up my glasses",
+   "skill": "picked_up",
+   "args": {
+    "object": "glasses"
+   },
+   "split": "heldout"
+  },
+  {
+   "utterance": "grabbed my bus pass",
+   "skill": "picked_up",
+   "args": {
+    "object": "bus pass"
+   },
+   "split": "dev"
+  },
+  {
+   "utterance": "remember this as my house keys",
+   "skill": "enrol_object",
+   "args": {
+    "label": "house keys"
+   },
+   "split": "dev"
+  },
+  {
+   "utterance": "learn these, they're my car keys",
+   "skill": "enrol_object",
+   "args": {
+    "label": "car keys"
+   },
+   "split": "heldout"
+  },
+  {
+   "utterance": "save this as my wallet",
+   "skill": "enrol_object",
+   "args": {
+    "label": "wallet"
+   },
+   "split": "dev"
+  },
+  {
+   "utterance": "this is my blue mug, remember it",
+   "skill": "enrol_object",
+   "args": {
+    "label": "blue mug"
+   },
+   "split": "heldout"
+  },
+  {
+   "utterance": "help me use this microwave",
+   "skill": "appliance_help",
+   "args": {
+    "task": "microwave"
+   },
+   "split": "dev"
+  },
+  {
+   "utterance": "how do I defrost bread",
+   "skill": "appliance_help",
+   "args": {
+    "task": "defrost"
+   },
+   "split": "dev"
+  },
+  {
+   "utterance": "how do I start the washing machine",
+   "skill": "appliance_help",
+   "args": {
+    "task": "washing machine"
+   },
+   "split": "heldout"
+  },
+  {
+   "utterance": "set the oven to 180 degrees",
+   "skill": "appliance_help",
+   "args": {
+    "task": "oven"
+   },
+   "split": "dev"
+  },
+  {
+   "utterance": "walk me through the coffee machine",
+   "skill": "appliance_help",
+   "args": {
+    "task": "coffee"
+   },
+   "split": "heldout"
+  },
+  {
+   "utterance": "how do I turn on this heater",
+   "skill": "appliance_help",
+   "args": {
+    "task": "heater"
+   },
+   "split": "dev"
+  },
+  {
+   "utterance": "help me tidy my room",
+   "skill": "plan_task",
+   "args": {
+    "goal": "tidy"
+   },
+   "split": "dev"
+  },
+  {
+   "utterance": "what should I do first",
+   "skill": "plan_task",
+   "args": {},
+   "split": "heldout"
+  },
+  {
+   "utterance": "help me get dressed",
+   "skill": "plan_task",
+   "args": {
+    "goal": "dressed"
+   },
+   "split": "dev"
+  },
+  {
+   "utterance": "I need to pack my bag",
+   "skill": "plan_task",
+   "args": {
+    "goal": "pack"
+   },
+   "split": "heldout"
+  },
+  {
+   "utterance": "let's clean the kitchen",
+   "skill": "plan_task",
+   "args": {
+    "goal": "clean"
+   },
+   "split": "dev"
+  },
+  {
+   "utterance": "say that again",
+   "skill": "repeat",
+   "args": {},
+   "split": "dev"
+  },
+  {
+   "utterance": "repeat",
+   "skill": "repeat",
+   "args": {},
+   "split": "heldout"
+  },
+  {
+   "utterance": "what did you say",
+   "skill": "repeat",
+   "args": {},
+   "split": "dev"
+  },
+  {
+   "utterance": "pardon?",
+   "skill": "repeat",
+   "args": {},
+   "split": "heldout"
+  },
+  {
+   "utterance": "stop",
+   "skill": "stop",
+   "args": {},
+   "split": "dev"
+  },
+  {
+   "utterance": "be quiet",
+   "skill": "stop",
+   "args": {},
+   "split": "dev"
+  },
+  {
+   "utterance": "shush",
+   "skill": "stop",
+   "args": {},
+   "split": "heldout"
+  },
+  {
+   "utterance": "look harder",
+   "skill": "look_harder",
+   "args": {},
+   "split": "dev"
+  },
+  {
+   "utterance": "look closer",
+   "skill": "look_harder",
+   "args": {},
+   "split": "heldout"
+  },
+  {
+   "utterance": "can you look again more carefully",
+   "skill": "look_harder",
+   "args": {},
+   "split": "dev"
+  },
+  {
+   "utterance": "help",
+   "skill": "help",
+   "args": {},
+   "split": "dev"
+  },
+  {
+   "utterance": "what can you do",
+   "skill": "help",
+   "args": {},
+   "split": "heldout"
+  },
+  {
+   "utterance": "is it safe to cross",
+   "skill": "refuse",
+   "args": {},
+   "split": "dev"
+  },
+  {
+   "utterance": "can I cross now",
+   "skill": "refuse",
+   "args": {},
+   "split": "heldout"
+  },
+  {
+   "utterance": "is the road clear",
+   "skill": "refuse",
+   "args": {},
+   "split": "dev"
+  },
+  {
+   "utterance": "are there cars coming",
+   "skill": "refuse",
+   "args": {},
+   "split": "dev"
+  },
+  {
+   "utterance": "is the light green",
+   "skill": "refuse",
+   "args": {},
+   "split": "heldout"
+  },
+  {
+   "utterance": "how many pills should I take",
+   "skill": "refuse",
+   "args": {},
+   "split": "dev"
+  },
+  {
+   "utterance": "what's the dosage",
+   "skill": "refuse",
+   "args": {},
+   "split": "heldout"
+  },
+  {
+   "utterance": "can I take this medicine with food",
+   "skill": "refuse",
+   "args": {},
+   "split": "dev"
+  },
+  {
+   "utterance": "who is this",
+   "skill": "refuse",
+   "args": {},
+   "split": "dev"
+  },
+  {
+   "utterance": "who's at the door",
+   "skill": "refuse",
+   "args": {},
+   "split": "heldout"
+  },
+  {
+   "utterance": "how old is she",
+   "skill": "refuse",
+   "args": {},
+   "split": "dev"
+  },
+  {
+   "utterance": "is he angry",
+   "skill": "refuse",
+   "args": {},
+   "split": "heldout"
+  },
+  {
+   "utterance": "order me a pizza",
+   "skill": "unsupported",
+   "args": {},
+   "split": "dev"
+  },
+  {
+   "utterance": "what's the weather tomorrow",
+   "skill": "unsupported",
+   "args": {},
+   "split": "dev"
+  },
+  {
+   "utterance": "play some music",
+   "skill": "unsupported",
+   "args": {},
+   "split": "heldout"
+  }
+ ]
+}

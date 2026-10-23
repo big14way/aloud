@@ -17,7 +17,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "samples": "node scripts/make-samples.mjs",
-    "record-samples": "tsx scripts/record-samples.ts"
+    "record-samples": "tsx scripts/record-samples.ts",
+    "eval": "tsx eval/run.ts"
   },
   "dependencies": {
     "hono": "^4.13.13",
