@@ -1,0 +1,44 @@
+# private research notes, never commit
+ALOUD_BLUEPRINT.md
+FEEDBACK.md
+
+# secrets
+.env
+.env.local
+.env.*.local
+*.pem
+
+# node
+node_modules
+dist
+dev-dist
+*.tsbuildinfo
+.vercel
+
+# python
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# model weights and adapters (they live in Object Storage)
+*.safetensors
+*.gguf
+*.bin
+*.pt
+*.pth
+distill/out/
+distill/data/
+
+# private evaluation photos, labels and run output
+eval/data/
+eval/runs/
+
+# memory exports from the app
+aloud-memory-*.json
+
+# OS / editor
+.DS_Store
+.idea
+.vscode/*
+!.vscode/extensions.json
