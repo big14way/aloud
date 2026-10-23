@@ -83,6 +83,8 @@ export class Controller {
   private lastSkill: "describe" | "read" | "what_is" | null = null;
   private sampleFrame: string | null = null;
   private sampleFrame2: string | null = null;
+  /** Resolves when the chosen sample photo is ready; actions wait for it instead of using the camera. */
+  private sampleReady: Promise<void> | null = null;
   private unlocked = false;
   /** True while a capture-and-answer action runs; further presses are ignored, not queued. */
   private working = false;
@@ -195,19 +197,35 @@ export class Controller {
     if (!sample) {
       this.sampleFrame = null;
       this.sampleFrame2 = null;
+      this.sampleReady = null;
       this.set({ sample: null, simulatedSecondFrame: false });
       return;
     }
     // The camera is released while a sample photo stands in for it.
     this.stopCamera();
+    this.sampleFrame = null;
+    this.sampleFrame2 = null;
+    this.set({ sample, simulatedSecondFrame: false });
     const toFrame = async (file: string) => {
       const img = await loadImage(await sampleDataUrl(file));
       return encodeFrame(img, img.naturalWidth, img.naturalHeight);
     };
-    this.sampleFrame = await toFrame(sample.file);
-    this.sampleFrame2 = await toFrame(`frame2/${sample.file}`).catch(() => null);
-    this.set({ sample, simulatedSecondFrame: false });
-    this.say([`Sample photo: ${sample.title}. Press the button, or choose a skill.`]);
+    const ready = (async () => {
+      const [first, second] = await Promise.all([toFrame(sample.file), toFrame(`frame2/${sample.file}`).catch(() => null)]);
+      // Ignore a load that finished after another sample (or the camera) was chosen.
+      if (this.state.sample?.id !== sample.id) return;
+      this.sampleFrame = first;
+      this.sampleFrame2 = second;
+    })();
+    this.sampleReady = ready.catch(() => {
+      if (this.state.sample?.id === sample.id) this.set({ sample: null });
+    });
+    await this.sampleReady;
+    if (this.state.sample?.id === sample.id && this.sampleFrame) {
+      this.speaker.say([`Sample photo: ${sample.title}. Press the button, or choose a skill.`], false);
+    } else if (this.state.sample === null) {
+      this.say(["That sample photo didn't load. Please try another, or use the camera."]);
+    }
   }
 
   async startCamera(): Promise<boolean> {
@@ -224,6 +242,7 @@ export class Controller {
 
   /** One frame, or two ~400 ms apart. Returns null (and says why) when there is no picture. */
   private async frames(count: 1 | 2): Promise<string[] | null> {
+    if (this.sampleReady) await this.sampleReady;
     if (this.sampleFrame) {
       if (count === 1) return [this.sampleFrame];
       this.set({ simulatedSecondFrame: true });

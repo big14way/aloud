@@ -45,3 +45,7 @@ aloud-memory-*.json
 
 # local live-test scratch
 .live/
+
+# Vercel CLI files (it writes a token to .env.local)
+.env*
+!.env.example

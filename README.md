@@ -17,7 +17,7 @@ Built for the Nebius x NVIDIA Global AI Hackathon, **Personal AI** track.
 
 ## Try it
 
-- **Demo:** _deployment link coming_. Open it on a phone over HTTPS. On a laptop, choose **Samples**: every skill works on the bundled sample photos, no camera needed.
+- **Demo:** **https://getaloud.vercel.app**. Open it on a phone to use the camera. On a laptop, choose **Samples**: every skill works on the bundled sample photos, no camera needed.
 - **Controls:** tap anywhere to hear what's in front of you. Double-tap repeats. Hold to talk.
 - **Buttons:** Read, What is this, Find, Talk, Repeat and Stop. You can also type a request instead of speaking.
 - **Bluetooth clicker or keyboard:**
@@ -167,7 +167,7 @@ Every row is a small set, and the photos are rendered synthetic scenes, so these
 - **Two dev problems found in this run were fixed afterwards,** so they aren't reflected above:
   - Read sometimes repeated a number that was already part of a line.
   - An unsure person was stated plainly instead of being hedged.
-- **Latency:** server-side p50 was 2.2–2.7 s, measured from a slow connection (TLS handshakes alone took about 2 s). A deployed server keeps connections warm.
+- **Latency:** measured on the deployed server (Vercel to Token Factory), the server-side time was 1.3–1.8 s for Describe, 1.5–2.8 s for Read (two frames in parallel), and 0.9 s for routing. On a phone, add the photo upload. The evaluation numbers above were measured from a slower connection, where TLS handshakes alone took about 2 s.
 - **Next:** a real photo set and a phone measurement are next ([eval/README.md](eval/README.md)).
 
 ## Privacy and safety
