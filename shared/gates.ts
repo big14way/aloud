@@ -4,6 +4,7 @@ import {
   PHARMACIST_NOTE,
   REFUSALS,
   givesDosingAdvice,
+  hasTrafficContext,
   looksLikeMedicine,
   makesTrafficClaim,
   mentionsPerson,
@@ -17,6 +18,8 @@ export type VisionSkill = "describe" | "read" | "what_is";
 export type AnswerStatus = "answered" | "guidance" | "empty";
 
 export const NUMBER_ABSTAIN = "I see a number but can't confirm it. Move closer.";
+/** Describe and What-is use one frame, so their numbers are masked and checked by Read instead. */
+export const NUMBER_DEFER = "Press Read to check the number.";
 
 export interface NumberVerdict {
   /** "agreed": both frames gave the same value. "adjudicated": Ultra judged two different reads. */
@@ -123,7 +126,7 @@ function personSentence(item: VisionItem): string {
 }
 
 function maskNumbers(text: string): string {
-  return text.replace(/[$€£₦¥₹]?\s?\d(?:[\d.,:/\-]*\d)?%?/g, "(number unclear)");
+  return text.replace(/(?:[$€£₦¥₹]\s?)?\d(?:[\d.,:/\-]*\d)?%?/g, "(number unclear)");
 }
 
 function mean(xs: number[]): number {
@@ -174,13 +177,15 @@ function renderDescribe(input: RenderInput, flags: string[]): Body {
     .map((item, index) => ({ item, index }))
     .sort((a, b) => KIND_ORDER[a.item.kind] - KIND_ORDER[b.item.kind] || a.index - b.index);
 
+  const streetScene = read.items.some((i) => hasTrafficContext(i.content));
+  let numbersMasked = false;
   let spokenNonHazard = 0;
   for (const { item } of ordered) {
     if (item.confidence < THRESHOLDS.unsure) {
       dropped++;
       continue;
     }
-    if (makesTrafficClaim(item.content)) {
+    if (makesTrafficClaim(item.content, streetScene)) {
       if (!trafficRefused) speech.push(REFUSALS.traffic);
       trafficRefused = true;
       flags.push("traffic_claim_removed");
@@ -201,15 +206,20 @@ function renderDescribe(input: RenderInput, flags: string[]): Body {
       medicineNoted = true;
       continue;
     }
-    const content = stripEndPunctuation(item.content);
+    let content = stripEndPunctuation(item.content);
     const loc = where(item);
-    const isNumber = item.kind === "number" || item.number_kind !== "none";
-    if (isNumber) {
+    const digits = numericTokens(content).length > 0;
+    if (item.kind === "number" || (item.number_kind !== "none" && !digits)) {
       // A single frame can't confirm a number. Point to Read, which uses two.
       if (!numberNoted) speech.push("There's a number here. Press Read to check it.");
       numberNoted = true;
       flags.push("number_deferred");
       continue;
+    }
+    if (digits) {
+      content = maskNumbers(content);
+      numbersMasked = true;
+      flags.push("number_deferred");
     }
     const plain = item.confidence >= THRESHOLDS.plain;
     if (item.kind === "text") {
@@ -220,6 +230,7 @@ function renderDescribe(input: RenderInput, flags: string[]): Body {
       speech.push(plain ? `${capitalize(content)}${loc ? ` ${loc}` : ""}.` : `I think there's ${lowerArticle(content)}${loc ? ` ${loc}` : ""}, but I'm not sure.`);
     }
   }
+  if (numbersMasked) speech.push(NUMBER_DEFER);
   if (dropped > 0 && speech.length > 0) speech.push("There's more I can't make out.");
   if (speech.length === 0) {
     return {
@@ -283,6 +294,16 @@ function renderWhatIs(input: RenderInput, flags: string[]): Body {
   const speech: string[] = [];
   const spokenConf: number[] = [];
   let dropped = 0;
+  let numberNote = false;
+  const streetScene = read.items.some((i) => hasTrafficContext(i.content));
+
+  /** One frame can't confirm a number: mask it and send the user to Read. */
+  const unverified = (text: string) => {
+    if (numericTokens(text).length === 0) return text;
+    numberNote = true;
+    flags.push("number_deferred");
+    return maskNumbers(text);
+  };
 
   const usable = read.items.filter((i) => {
     if (i.confidence < THRESHOLDS.unsure) {
@@ -294,20 +315,18 @@ function renderWhatIs(input: RenderInput, flags: string[]): Body {
   const main = usable.find((i) => i.kind === "object" || i.kind === "hazard" || i.kind === "person" || i.kind === "place");
   if (main) {
     spokenConf.push(main.confidence);
-    const content = stripEndPunctuation(main.content);
     if (main.kind === "person" || mentionsPerson(main.content)) {
       if (main.kind !== "person") flags.push("person_redacted");
       speech.push(personSentence(main));
     } else if (looksLikeMedicine(main.content) || givesDosingAdvice(main.content)) {
       flags.push("medicine");
       speech.push("This is a medicine. Press Read to hear the label word for word.");
-    } else if (makesTrafficClaim(main.content)) {
+    } else if (makesTrafficClaim(main.content, streetScene)) {
       flags.push("traffic_claim_removed");
       speech.push(REFUSALS.traffic);
-    } else if (main.confidence >= THRESHOLDS.plain) {
-      speech.push(`This is ${lowerArticle(content)}.`);
     } else {
-      speech.push(`I think this is ${lowerArticle(content)}, but I'm not sure.`);
+      const content = unverified(stripEndPunctuation(main.content));
+      speech.push(main.confidence >= THRESHOLDS.plain ? `This is ${lowerArticle(content)}.` : `I think this is ${lowerArticle(content)}, but I'm not sure.`);
     }
   }
   const labels = usable.filter((i) => (i.kind === "text" || i.kind === "number") && i !== main).slice(0, 2);
@@ -317,16 +336,16 @@ function renderWhatIs(input: RenderInput, flags: string[]): Body {
       flags.push("medicine");
       continue;
     }
-    if (hasNumber(t)) {
-      // Labels with numbers wait for Read's two-frame check.
-      speech.push("The label has a number. Press Read to check it.");
+    if (t.kind === "number" || (t.number_kind !== "none" && numericTokens(t.content).length === 0)) {
+      numberNote = true;
       flags.push("number_deferred");
       continue;
     }
     spokenConf.push(t.confidence);
-    const content = stripEndPunctuation(t.content);
+    const content = unverified(stripEndPunctuation(t.content));
     speech.push(t.confidence >= THRESHOLDS.plain ? `The label says "${content}".` : `I think the label says "${content}", but I'm not sure.`);
   }
+  if (numberNote) speech.push(speech.length > 0 ? NUMBER_DEFER : "There's a number here. Press Read to check it.");
   if (speech.length === 0) {
     return {
       status: "empty",

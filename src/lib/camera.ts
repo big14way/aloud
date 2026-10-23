@@ -59,6 +59,9 @@ export async function simulatedSecondFrame(dataUrl: string): Promise<string> {
 export class Camera {
   private stream: MediaStream | null = null;
   private video: HTMLVideoElement | null = null;
+  private starting: Promise<boolean> | null = null;
+  /** Bumped by stop(), so a permission prompt that resolves late can't leave the camera on. */
+  private generation = 0;
 
   attach(video: HTMLVideoElement | null): void {
     this.video = video;
@@ -77,26 +80,43 @@ export class Camera {
   }
 
   /** Ask for the back camera. Resolves false when there is no camera or permission is refused. */
-  async start(): Promise<boolean> {
-    if (this.active) return true;
-    if (!Camera.supported()) return false;
+  start(): Promise<boolean> {
+    if (this.active) return Promise.resolve(true);
+    if (!Camera.supported()) return Promise.resolve(false);
+    // Two quick presses share one request, so no second stream is left running.
+    this.starting ??= this.open().finally(() => {
+      this.starting = null;
+    });
+    return this.starting;
+  }
+
+  private async open(): Promise<boolean> {
+    const generation = this.generation;
+    let stream: MediaStream;
     try {
-      this.stream = await navigator.mediaDevices.getUserMedia({
+      stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 960 } },
         audio: false,
       });
     } catch {
-      this.stream = null;
       return false;
     }
+    if (generation !== this.generation) {
+      // stop() was called while the prompt was open (e.g. the app was hidden).
+      stream.getTracks().forEach((t) => t.stop());
+      return false;
+    }
+    this.stream?.getTracks().forEach((t) => t.stop());
+    this.stream = stream;
     if (this.video) {
-      this.video.srcObject = this.stream;
+      this.video.srcObject = stream;
       await this.video.play().catch(() => {});
     }
     return true;
   }
 
   stop(): void {
+    this.generation++;
     this.stream?.getTracks().forEach((t) => t.stop());
     this.stream = null;
     if (this.video) this.video.srcObject = null;

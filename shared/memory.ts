@@ -69,7 +69,7 @@ export interface ObjectState {
   status: "confirmed_at_location" | "moved_since" | "unknown";
   /** Last trusted placement or sighting. */
   last: MemEvent | null;
-  /** First trusted event after `last` that invalidated it. */
+  /** First event after `last` that invalidated it: a trusted pick-up or "missing", or the user saying it moved. */
   invalidatedBy: MemEvent | null;
   /** Most recent untrusted sighting after `last`, if any. */
   weakSighting: MemEvent | null;
@@ -90,10 +90,18 @@ export function deriveState(objectId: string, events: MemEvent[]): ObjectState {
       if (last && !invalidatedBy) invalidatedBy = ev;
     } else if ((ev.kind === "placed" || ev.kind === "seen") && ev.location) {
       weakSighting = ev;
+      // The user's own word that it is somewhere else is enough to stop claiming the old place.
+      const movedByUser = ev.kind === "placed" && ev.source === "user_said" && sameLocation(ev.location, last?.location ?? "") === false;
+      if (last && !invalidatedBy && movedByUser) invalidatedBy = ev;
     }
   }
   const status = !last ? "unknown" : invalidatedBy ? "moved_since" : "confirmed_at_location";
   return { status, last, invalidatedBy, weakSighting };
+}
+
+function sameLocation(a: string, b: string): boolean {
+  const n = (s: string) => s.toLowerCase().replace(/\b(the|my|a|an)\b/g, " ").replace(/[^\p{L}\p{N} ]+/gu, " ").replace(/\s+/g, " ").trim();
+  return n(a) === n(b);
 }
 
 const PLURAL_WORDS = new Set(["glasses", "sunglasses", "scissors", "headphones", "earbuds", "earphones", "keys", "pants", "trousers", "jeans", "gloves", "shoes", "socks", "tweezers", "pliers"]);
@@ -233,10 +241,13 @@ export function answerFind(query: string, objects: MemObject[], events: MemEvent
   const when = whenPhrase(state.last.ts, now, opts);
   if (state.status === "moved_since" && state.invalidatedBy) {
     const inv = state.invalidatedBy;
+    const theyre = plural ? "they're" : "it's";
     const reason =
       inv.kind === "picked_up"
         ? `but ${they} picked up afterward`
-        : `but I didn't see ${them} there ${whenPhrase(inv.ts, now, opts)}`;
+        : inv.kind === "placed"
+          ? `but you told me ${whenPhrase(inv.ts, now, opts)} that ${theyre} ${inv.location}, and I couldn't see ${them} there`
+          : `but I didn't see ${them} there ${whenPhrase(inv.ts, now, opts)}`;
     return {
       answer_status: "last_confirmed_only",
       speech: `I last confirmed your ${obj.label} ${where} ${when}, ${reason}. I haven't confirmed ${them} anywhere since.`,

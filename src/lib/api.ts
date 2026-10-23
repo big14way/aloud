@@ -17,6 +17,7 @@ export type ApiResult<T> = { ok: true; data: T } | { ok: false; error: ErrorResp
 
 const OFFLINE: ErrorResponse = { ok: false, error: "model_error", speech: ["I'm offline right now."] };
 const FAILED: ErrorResponse = { ok: false, error: "model_error", speech: ["I couldn't get an answer just now. Please try again."] };
+const TIMED_OUT: ErrorResponse = { ok: false, error: "model_error", speech: ["That took too long. Please try again."] };
 
 async function call<T>(method: "GET" | "POST", path: string, body?: unknown, timeoutMs = 40_000): Promise<ApiResult<T>> {
   if (typeof navigator !== "undefined" && navigator.onLine === false) return { ok: false, error: OFFLINE, offline: true };
@@ -28,7 +29,9 @@ async function call<T>(method: "GET" | "POST", path: string, body?: unknown, tim
       body: body === undefined ? undefined : JSON.stringify(body),
       signal: AbortSignal.timeout(timeoutMs),
     });
-  } catch {
+  } catch (err) {
+    // A slow answer is not the same as being offline.
+    if (err instanceof DOMException && (err.name === "TimeoutError" || err.name === "AbortError")) return { ok: false, error: TIMED_OUT, offline: false };
     return { ok: false, error: OFFLINE, offline: true };
   }
   const json = (await res.json().catch(() => null)) as (T & { ok?: boolean }) | ErrorResponse | null;

@@ -10,9 +10,15 @@ describe("canonicalNumber", () => {
   it("keeps currency, so $12 and €12 differ", () => {
     expect(canonicalNumber("$12")).not.toBe(canonicalNumber("€12"));
   });
-  it("reduces phone numbers and times to digits", () => {
+  it("reduces phone numbers and long dates to digits", () => {
     expect(canonicalNumber("555-1234")).toBe("5551234");
-    expect(canonicalNumber("10:42")).toBe("1042");
+    expect(canonicalNumber("12/10/2026")).toBe("12102026");
+  });
+  it("keeps separators in short numbers, so different values never match", () => {
+    expect(canonicalNumber("10:42")).toBe("10:42");
+    expect(canonicalNumber("1/2")).not.toBe(canonicalNumber("12"));
+    expect(canonicalNumber("1-2")).not.toBe(canonicalNumber("12"));
+    expect(canonicalNumber("1,25")).not.toBe(canonicalNumber("125"));
   });
   it("does not confuse 12.50 with 1250", () => {
     expect(canonicalNumber("12.50")).not.toBe(canonicalNumber("1250"));
@@ -43,6 +49,11 @@ describe("compareFrames", () => {
     const a = [item({ kind: "text", content: "5 apples" }), item({ kind: "text", content: "5 pears" })];
     const b = [item({ kind: "text", content: "5 apples" })];
     expect(compareFrames(a, b)).toEqual({ agreed: [0], disputed: [1] });
+  });
+  it("disputes half a tablet against twelve tablets", () => {
+    const a = [item({ kind: "text", content: "Take 12 tablets" })];
+    const b = [item({ kind: "text", content: "Take 1/2 tablet" })];
+    expect(compareFrames(a, b).disputed).toEqual([0]);
   });
   it("disputes a number item with no digits", () => {
     const a = [item({ kind: "number", content: "twelve", number_kind: "amount" })];

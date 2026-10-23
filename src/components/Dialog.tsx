@@ -12,16 +12,22 @@ interface Props {
 export function Dialog({ title, onClose, children, closable = true }: Props) {
   const id = useId();
   const ref = useRef<HTMLDivElement>(null);
+  // Held in refs so re-renders of the parent (a new onClose each time) never re-run the focus effect.
+  const onCloseRef = useRef(onClose);
+  const closableRef = useRef(closable);
+  onCloseRef.current = onClose;
+  closableRef.current = closable;
 
+  // Runs once per opening: move focus in, trap Tab, close on Escape, restore focus on close.
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
     const node = ref.current;
     const first = node?.querySelector<HTMLElement>("button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])");
     (first ?? node)?.focus();
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && closable) {
+      if (e.key === "Escape" && closableRef.current) {
         e.stopPropagation();
-        onClose();
+        onCloseRef.current();
       }
       if (e.key === "Tab" && node) {
         const items = [...node.querySelectorAll<HTMLElement>("button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])")].filter((el) => !el.hasAttribute("disabled"));
@@ -42,7 +48,7 @@ export function Dialog({ title, onClose, children, closable = true }: Props) {
       node?.removeEventListener("keydown", onKey);
       previous?.focus?.();
     };
-  }, [onClose, closable]);
+  }, []);
 
   return (
     <div className="dialog-backdrop">

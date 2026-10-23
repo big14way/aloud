@@ -55,7 +55,8 @@ class Rules(unittest.TestCase):
         self.assertEqual(canonical_number("$12.50"), "$12.5")
         self.assertEqual(canonical_number("1,250.00"), "1250")
         self.assertEqual(canonical_number("555-1234"), "5551234")
-        self.assertEqual(canonical_number("10:42"), "1042")
+        self.assertEqual(canonical_number("10:42"), "10:42")
+        self.assertNotEqual(canonical_number("1/2"), canonical_number("12"))
 
     def test_shape_problems(self):
         self.assertEqual(shape_problems(["It costs $12.50."], ["It costs $12.50."]), [])

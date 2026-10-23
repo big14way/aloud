@@ -5,7 +5,7 @@ import { enforceEasy, stepTurn } from "../shared/easy.js";
 import { type NumberVerdict, type VisionSkill, clockPhrase, distancePhrase, guidancePhrase, hasQualityIssue, qualityGate, render } from "../shared/gates.js";
 import { clamp01, clampClock, normalizeRead } from "../shared/normalize.js";
 import { compareFrames, hasNumber, numericTokens } from "../shared/numbers.js";
-import { givesDosingAdvice, looksLikeMedicine, makesTrafficClaim, mentionsPerson } from "../shared/safety.js";
+import { REFUSALS, checkUtterance, givesDosingAdvice, hasTrafficContext, looksLikeMedicine, makesTrafficClaim, mentionsPerson } from "../shared/safety.js";
 import {
   Adjudication,
   LabelRead,
@@ -17,7 +17,7 @@ import {
   type VisionItem,
 } from "../shared/schemas.js";
 import { type Ctx, Meter, withTextLane } from "./context.js";
-import { chatJson, type JsonCall, type Message } from "./llm.js";
+import { chatJson, errorMetrics, type JsonCall, type Message, ModelError } from "./llm.js";
 import {
   ADJUDICATE_SYSTEM,
   ENROL_PROMPT,
@@ -28,6 +28,12 @@ import {
   stepCheckPrompt,
 } from "./prompts.js";
 import { shapeEasy } from "./shape.js";
+
+/** Rethrow a frame failure whose billed calls were already charged. */
+function withoutMetrics(err: unknown): unknown {
+  if (err instanceof ModelError) err.metrics = [];
+  return err;
+}
 
 const MAX_TOKENS: Record<SeeRequest["skill"], number> = {
   describe: 500,
@@ -75,32 +81,48 @@ function base(req: SeeRequest, meter: Meter, framesUsed: number): Omit<SeeRespon
 
 export async function see(ctx: Ctx, req: SeeRequest): Promise<SeeResponse> {
   const meter = new Meter(ctx.spend);
-  switch (req.skill) {
-    case "describe":
-    case "read":
-    case "what_is":
-      return seeAndSay(ctx, req, req.skill, meter);
-    case "enrol":
-      return enrol(ctx, req, meter);
-    case "match":
-      return match(ctx, req, meter);
-    case "label":
-      return label(ctx, req, meter);
-    case "step_check":
-      return stepCheck(ctx, req, meter);
-    case "plan":
-      return plan(ctx, req, meter);
+  try {
+    switch (req.skill) {
+      case "describe":
+      case "read":
+      case "what_is":
+        return await seeAndSay(ctx, req, req.skill, meter);
+      case "enrol":
+        return await enrol(ctx, req, meter);
+      case "match":
+        return await match(ctx, req, meter);
+      case "label":
+        return await label(ctx, req, meter);
+      case "step_check":
+        return await stepCheck(ctx, req, meter);
+      case "plan":
+        return await plan(ctx, req, meter);
+    }
+  } catch (err) {
+    // Calls billed before a failure still count against the daily budget.
+    meter.add(errorMetrics(err));
+    throw err;
   }
+}
+
+/** Model text that may be spoken: no people, traffic judgements, dosing or medicine. */
+function speakable(text: string): boolean {
+  return Boolean(text.trim()) && !mentionsPerson(text) && !makesTrafficClaim(text) && !givesDosingAdvice(text) && !looksLikeMedicine(text);
+}
+
+/** Run frame calls in parallel; charge every billed call even if one of them fails. */
+async function frameCalls<T>(meter: Meter, calls: Promise<JsonCall<T>>[]): Promise<PromiseSettledResult<JsonCall<T>>[]> {
+  const results = await Promise.allSettled(calls);
+  for (const r of results) meter.add(r.status === "fulfilled" ? r.value.metrics : errorMetrics(r.reason));
+  return results;
 }
 
 async function seeAndSay(ctx: Ctx, req: SeeRequest, skill: VisionSkill, meter: Meter): Promise<SeeResponse> {
   // Read uses both frames so numbers can be cross-checked; the others need one.
   const frames = skill === "read" ? req.frames : req.frames.slice(0, 1);
-  const [first, extra] = await Promise.allSettled(frames.map((f) => visionCall(ctx, req, VisionRead, "vision_read", SKILL_PROMPTS[skill], [f])));
+  const [first, extra] = await frameCalls(meter, frames.map((f) => visionCall(ctx, req, VisionRead, "vision_read", SKILL_PROMPTS[skill], [f])));
   // The first frame must succeed. If only the second fails, numbers abstain but the text is still read.
-  if (first!.status === "rejected") throw first!.reason;
-  meter.add(first!.value.metrics);
-  if (extra?.status === "fulfilled") meter.add(extra.value.metrics);
+  if (first!.status === "rejected") throw withoutMetrics(first!.reason);
   let primary = normalizeRead(first!.value.data);
   let second = extra?.status === "fulfilled" ? normalizeRead(extra.value.data) : null;
   if (second && !qualityGate(primary, skill).pass && qualityGate(second, skill).pass) [primary, second] = [second, primary];
@@ -147,7 +169,14 @@ async function verifyNumbers(ctx: Ctx, meter: Meter, a: { items: VisionItem[]; i
   const canJudge = ctx.cfg.adjudication && !ctx.spend.exhausted();
   const toJudge = canJudge ? eligible.slice(0, MAX_ADJUDICATIONS) : [];
   for (const i of eligible) if (!toJudge.includes(i)) verdicts.set(i, { source: "abstained" });
-  const results = await Promise.all(toJudge.map((i) => adjudicate(ctx, meter, a, b, i).catch((): NumberVerdict => ({ source: "abstained" }))));
+  const results = await Promise.all(
+    toJudge.map((i) =>
+      adjudicate(ctx, meter, a, b, i).catch((err: unknown): NumberVerdict => {
+        meter.add(errorMetrics(err));
+        return { source: "abstained" };
+      }),
+    ),
+  );
   toJudge.forEach((i, k) => verdicts.set(i, results[k] ?? { source: "abstained" }));
   return verdicts;
 }
@@ -247,13 +276,14 @@ export function sameModelNumber(a: string, b: string): boolean {
 }
 
 async function label(ctx: Ctx, req: SeeRequest, meter: Meter): Promise<SeeResponse> {
-  const calls = await Promise.all(req.frames.map((f) => visionCall(ctx, req, LabelRead, "label_read", LABEL_PROMPT, [f])));
-  for (const c of calls) meter.add(c.metrics);
-  const a = { ...calls[0]!.data, confidence: clamp01(calls[0]!.data.confidence) };
-  const b = calls[1]?.data ?? null;
-  const verified = b !== null && sameModelNumber(a.model_number, b.model_number);
-  const common = { ...base(req, meter, req.frames.length), label: { ...a, model_number_verified: verified }, metrics: meter.summary() };
+  const [first, extra] = await frameCalls(meter, req.frames.map((f) => visionCall(ctx, req, LabelRead, "label_read", LABEL_PROMPT, [f])));
+  if (first!.status === "rejected") throw withoutMetrics(first!.reason);
+  const a = { ...first!.value.data, confidence: clamp01(first!.value.data.confidence) };
+  const b = extra?.status === "fulfilled" ? extra.value.data : null;
   const guidance = qualityOnly(a.image_quality, a.can_answer, a.confidence, "read");
+  // Only an answered read with two agreeing frames is verified.
+  const verified = !guidance && b !== null && b.can_answer && sameModelNumber(a.model_number, b.model_number);
+  const common = { ...base(req, meter, req.frames.length), label: { ...a, model_number_verified: verified }, metrics: meter.summary() };
   if (guidance) return { ...common, status: "guidance", speech: [guidance], confidence: 0, flags: ["quality_gate"] };
   if (!a.model_number.trim()) {
     return { ...common, status: "empty", speech: ["I can't find a model number. Look for a sticker on the back, the side, or inside the door."], confidence: a.confidence, flags: [] };
@@ -276,7 +306,7 @@ async function stepCheck(ctx: Ctx, req: SeeRequest, meter: Meter): Promise<SeeRe
   if (guidance) return { ...common, status: "guidance", speech: [guidance], confidence: 0, flags: ["quality_gate"] };
   // The observation is model text, so it is screened and cut to one short sentence.
   const raw = s.observation.split(/(?<=[.!?])\s/)[0]?.trim() ?? "";
-  const safe = raw && !mentionsPerson(raw) && !makesTrafficClaim(raw) && !givesDosingAdvice(raw) && !looksLikeMedicine(raw) && raw.split(/\s+/).length <= 20;
+  const safe = speakable(raw) && raw.split(/\s+/).length <= 20;
   const note = safe ? ` ${raw.replace(/[.!?]*$/, ".")}` : "";
   let speech: string[];
   if (s.step_done === "yes" && s.confidence >= THRESHOLDS.trust) speech = ["That step looks done."];
@@ -293,9 +323,14 @@ summary: one short sentence about the plan. encouragement: one short warm senten
 Reply with JSON only.`;
 
 async function plan(ctx: Ctx, req: SeeRequest, meter: Meter): Promise<SeeResponse> {
+  const goal = req.context?.goal?.trim() || "tidy up this space";
+  // The goal is the user's own words; unsafe goals are refused before looking.
+  const refusal = checkUtterance(goal) ?? (hasTrafficContext(goal) ? "traffic" : looksLikeMedicine(goal) ? "dosing" : null);
+  if (refusal) {
+    return { ...base(req, meter, 0), status: "refused", speech: [REFUSALS[refusal]], confidence: 0, flags: ["goal_refused"], metrics: meter.summary() };
+  }
   const scene = await seeAndSay(ctx, { ...req, skill: "describe", mode: "standard" }, "describe", meter);
   if (scene.status !== "answered") return { ...scene, skill: "plan" };
-  const goal = req.context?.goal?.trim() || "tidy up this space";
   const res = await withTextLane(ctx, (lane) =>
     chatJson(
       ctx.llm,
@@ -317,14 +352,15 @@ async function plan(ctx: Ctx, req: SeeRequest, meter: Meter): Promise<SeeRespons
   meter.add(res.metrics);
   const steps = res.data.steps
     .map((s) => s.trim())
-    .filter((s) => s && !makesTrafficClaim(s) && !givesDosingAdvice(s) && !looksLikeMedicine(s))
+    .filter((s) => speakable(s))
     .slice(0, 5)
     .map((s) => enforceEasy(s).join(" "));
   if (steps.length === 0) {
     return { ...scene, skill: "plan", status: "empty", speech: ["I couldn't make a plan from this picture. Try pointing the phone at the whole area."], metrics: meter.summary() };
   }
   const name = req.context?.user_name;
-  const summary = enforceEasy(res.data.summary || `Let's ${goal}.`);
+  // The summary is model text too: it is screened like the steps.
+  const summary = enforceEasy(speakable(res.data.summary) ? res.data.summary : `Let's ${goal}.`);
   return {
     ...scene,
     skill: "plan",

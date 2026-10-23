@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { z } from "zod";
 import { FakeLLM } from "./fake-llm.js";
-import { ModelError, chatJson, resetJsonModes } from "./llm.js";
+import { ModelError, chatJson, errorMetrics, resetJsonModes } from "./llm.js";
 
 const Out = z.object({ answer: z.string() });
 const req = { lane: "fast" as const, model: "m", messages: [{ role: "system" as const, content: "sys" }, { role: "user" as const, content: "hi" }] };
@@ -40,6 +40,29 @@ describe("chatJson", () => {
     expect(String(sys?.content)).toContain("JSON Schema");
     await chatJson(llm, req, Out, "out", "json_schema");
     expect(llm.requests[2]?.responseFormat).toBe("json_object");
+  });
+
+  it("does not fall back for errors about something else, and remembers nothing", async () => {
+    const llm = new FakeLLM(() => new ModelError("maximum context length exceeded", "bad_request"));
+    await expect(chatJson(llm, req, Out, "out", "json_schema")).rejects.toMatchObject({ kind: "bad_request" });
+    expect(llm.requests).toHaveLength(1);
+    const ok = new FakeLLM(() => '{"answer":"ok"}');
+    await chatJson(ok, req, Out, "out", "json_schema");
+    expect(ok.requests[0]?.responseFormat).not.toBe("json_object");
+  });
+
+  it("does not remember a fallback that never worked", async () => {
+    const llm = new FakeLLM(() => new ModelError("bad request", "bad_request"));
+    await expect(chatJson(llm, req, Out, "out", "json_schema")).rejects.toMatchObject({ kind: "bad_request" });
+    const ok = new FakeLLM(() => '{"answer":"ok"}');
+    await chatJson(ok, req, Out, "out", "json_schema");
+    expect(typeof ok.requests[0]?.responseFormat).toBe("object");
+  });
+
+  it("carries billed calls on failure so the budget counts them", async () => {
+    const llm = new FakeLLM(() => "not json");
+    const err = await chatJson(llm, req, Out, "out", "json_schema").catch((e: unknown) => e);
+    expect(errorMetrics(err)).toHaveLength(2);
   });
 
   it("does not retry on rate limits", async () => {

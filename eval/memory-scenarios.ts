@@ -90,6 +90,21 @@ export const SCENARIOS: Scenario[] = [
     mustSay: ["I may have seen it on the desk"],
   },
   {
+    name: "User says it moved, camera couldn't confirm",
+    objects: [wallet],
+    events: [placedSeen("w", 3, "on the hall shelf"), placedSeen("w", 1, "in the drawer", 0.3)],
+    query: "where is my wallet",
+    expect: "last_confirmed_only",
+    mustSay: ["you told me", "it's in the drawer", "couldn't see it there"],
+  },
+  {
+    name: "User repeats the same place without a camera match",
+    objects: [wallet],
+    events: [placedSeen("w", 3, "on the hall shelf"), placedSeen("w", 1, "on the hall shelf", 0.3)],
+    query: "where is my wallet",
+    expect: "confirmed",
+  },
+  {
     name: "Low-confidence 'missing' does not overturn a confirmed place",
     objects: [wallet],
     events: [placedSeen("w", 3, "on the hall shelf"), ev("w", "missing", 1, { source: "vision", confidence: 0.5, location: "on the hall shelf" })],

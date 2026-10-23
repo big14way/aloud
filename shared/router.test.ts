@@ -35,6 +35,17 @@ describe("routeByRules", () => {
     expect(d.outcome).toBe("success");
   });
 
+  it.each([
+    ["Did I leave my keys on the table?", "keys"],
+    ["Have I left my wallet in the car?", "wallet"],
+    ["Who took my keys?", "keys"],
+    ["Is my bus pass in the drawer?", "bus pass"],
+  ])("turns the question %s into a find, never a memory write", (utterance, object) => {
+    const d = routeByRules(utterance);
+    expect(d.skill).toBe("find");
+    expect(d.args).toEqual({ object });
+  });
+
   it("refuses unsafe requests before anything else", () => {
     const d = routeByRules("is it safe to cross now?");
     expect(d).toEqual({ outcome: "fatal", skill: "refuse", args: {}, speech: [REFUSALS.traffic] });

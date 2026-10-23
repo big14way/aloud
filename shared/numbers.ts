@@ -8,7 +8,10 @@ const TOKEN_RE = new RegExp(`[${CURRENCY}]?\\s?\\d(?:[\\d.,:/\\-]*\\d)?%?`, "g")
 const PLAIN_DECIMAL_RE = /^\d+(\.\d+)?$/;
 const THOUSANDS_RE = /^\d{1,3}(,\d{3})+(\.\d+)?$/;
 
-/** Canonical form of one numeric token, e.g. "$1,250.50" -> "$1250.5", "555-1234" -> "5551234". */
+/**
+ * Canonical form of one numeric token: "$1,250.50" -> "$1250.5", "555-1234" -> "5551234".
+ * Short numbers keep their separators, so "1/2" and "12" never count as the same value.
+ */
 export function canonicalNumber(token: string): string {
   const compact = token.replace(/\s+/g, "");
   const first = compact[0];
@@ -17,7 +20,10 @@ export function canonicalNumber(token: string): string {
   let body = compact.slice(currency ? 1 : 0, percent ? -1 : undefined);
   if (THOUSANDS_RE.test(body)) body = body.replace(/,/g, "");
   if (PLAIN_DECIMAL_RE.test(body)) return `${currency}${String(Number(body))}${percent}`;
-  return `${currency}${body.replace(/[^\d]/g, "")}${percent}`;
+  const digits = body.replace(/[^\d]/g, "");
+  // Phone numbers and dates: how separators are printed varies, the digits don't.
+  if (digits.length >= 7) return `${currency}${digits}${percent}`;
+  return `${currency}${body}${percent}`;
 }
 
 export function numericTokens(text: string): string[] {

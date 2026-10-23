@@ -10,6 +10,8 @@ describe("checkUtterance", () => {
     "is the light green",
     "has the signal turned green?",
     "what colour is the traffic light",
+    "help me cross the road",
+    "I want to cross the street",
   ])("refuses traffic judgement: %s", (u) => expect(checkUtterance(u)).toBe("traffic"));
 
   it.each([
@@ -44,16 +46,36 @@ describe("output checks", () => {
     expect(mentionsPerson("a woman smiling by the window")).toBe(true);
     expect(mentionsPerson("a poster of Elvis")).toBe(true);
     expect(mentionsPerson("a red mug")).toBe(false);
+    expect(mentionsPerson("a smiling teenager")).toBe(true);
+    expect(mentionsPerson("an elderly cyclist")).toBe(true);
+    expect(mentionsPerson("a screwdriver")).toBe(false);
+    expect(mentionsPerson("a police car")).toBe(false);
   });
   it("spots traffic-safety claims", () => {
     expect(makesTrafficClaim("The road is clear")).toBe(true);
     expect(makesTrafficClaim("It looks safe to cross")).toBe(true);
     expect(makesTrafficClaim("a pedestrian crossing ahead")).toBe(false);
     expect(makesTrafficClaim("a traffic light showing green")).toBe(true);
-    expect(makesTrafficClaim("The light is green")).toBe(true);
     expect(makesTrafficClaim("a red man on the signal")).toBe(true);
     expect(makesTrafficClaim("a traffic light at 2 o'clock")).toBe(false);
     expect(makesTrafficClaim("a traffic light on the corner")).toBe(false);
+  });
+
+  it.each([
+    "a green traffic light",
+    "a green walk signal",
+    "a green pedestrian light",
+    "a red stop light",
+    "the crossing is clear",
+    "the crosswalk is clear of cars",
+    "no oncoming cars",
+  ])("catches the traffic claim in: %s", (text) => expect(makesTrafficClaim(text)).toBe(true));
+
+  it("judges a bare signal colour by the scene around it", () => {
+    expect(makesTrafficClaim("The light is green")).toBe(false);
+    expect(makesTrafficClaim("The light is green", true)).toBe(true);
+    expect(makesTrafficClaim("a green light on the kettle")).toBe(false);
+    expect(makesTrafficClaim("a red stop sign")).toBe(false);
   });
   it("spots medicine labels", () => {
     expect(looksLikeMedicine("Paracetamol 500 mg tablets")).toBe(true);

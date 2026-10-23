@@ -84,6 +84,11 @@ export class Controller {
   private sampleFrame: string | null = null;
   private sampleFrame2: string | null = null;
   private unlocked = false;
+  /** True while a capture-and-answer action runs; further presses are ignored, not queued. */
+  private working = false;
+  private nudged = false;
+  /** Bumped whenever a flow starts or is cancelled, so late results of an old flow are dropped. */
+  private flowEpoch = 0;
 
   state: UiState = {
     busy: null,
@@ -160,6 +165,28 @@ export class Controller {
       this.earcons.stopThinking();
       this.set({ busy: null });
     }
+  }
+
+  /** One capture-and-answer action at a time. A second press while one runs is ignored. */
+  private async exclusive(work: () => Promise<void>): Promise<void> {
+    if (this.working) {
+      if (!this.nudged) this.speaker.say(["One moment."], false);
+      this.nudged = true;
+      return;
+    }
+    this.working = true;
+    this.nudged = false;
+    try {
+      await work();
+    } finally {
+      this.working = false;
+    }
+  }
+
+  /** Sets a new flow (or none) and invalidates results still on their way for the old one. */
+  private setFlow(pending: Pending | null): void {
+    this.flowEpoch++;
+    this.set({ pending });
   }
 
   // --- frames ---------------------------------------------------------------
@@ -246,7 +273,12 @@ export class Controller {
     return null;
   }
 
-  async look(skill: "describe" | "read" | "what_is", lookHarder = false): Promise<void> {
+  look(skill: "describe" | "read" | "what_is"): Promise<void> {
+    this.unlock();
+    return this.exclusive(() => this.doLook(skill));
+  }
+
+  private async doLook(skill: "describe" | "read" | "what_is", lookHarder = false): Promise<void> {
     const frames = lookHarder && this.lastFrames.length > 0 ? this.lastFrames : await this.frames(skill === "read" ? 2 : 1);
     if (!frames) return;
     if (!lookHarder) {
@@ -267,33 +299,37 @@ export class Controller {
       this.say(["Press the button first, then ask me to look harder."]);
       return;
     }
-    this.speaker.say(["Looking more carefully. This takes a few seconds."], false);
-    await this.look(this.lastSkill, true);
+    const skill = this.lastSkill;
+    await this.exclusive(async () => {
+      this.speaker.say(["Looking more carefully. This takes a few seconds."], false);
+      await this.doLook(skill, true);
+    });
   }
 
   // --- the main button ------------------------------------------------------
 
   /** Tap, Space, or a clicker: continue the current flow, or describe. */
-  async primary(): Promise<void> {
+  primary(): Promise<void> {
     this.unlock();
-    if (this.state.busy) return;
-    this.speaker.stop();
-    const p = this.state.pending;
-    if (!p) return this.look("describe");
-    switch (p.type) {
-      case "enrol":
-        return p.step === 3 ? this.confirmEnrol() : this.enrolCapture(p);
-      case "appliance_label":
-        return this.readApplianceLabel(p.task);
-      case "appliance_steps":
-        return this.checkApplianceStep(p);
-      case "plan":
-        return this.nextPlanStep(p);
-      case "check":
-        // Checks belong to the Find button; the main button goes back to describing.
-        this.set({ pending: null });
-        return this.look("describe");
-    }
+    return this.exclusive(async () => {
+      this.speaker.stop();
+      const p = this.state.pending;
+      if (!p) return this.doLook("describe");
+      switch (p.type) {
+        case "enrol":
+          return p.step === 3 ? this.confirmEnrol() : this.enrolCapture(p);
+        case "appliance_label":
+          return this.readApplianceLabel(p);
+        case "appliance_steps":
+          return this.checkApplianceStep(p);
+        case "plan":
+          return this.nextPlanStep(p);
+        case "check":
+          // Checks belong to the Find button; the main button goes back to describing.
+          this.setFlow(null);
+          return this.doLook("describe");
+      }
+    });
   }
 
   repeat(): void {
@@ -309,7 +345,7 @@ export class Controller {
 
   cancelFlow(): void {
     if (!this.state.pending) return;
-    this.set({ pending: null });
+    this.setFlow(null);
     this.say(["OK, stopped."]);
   }
 
@@ -375,7 +411,7 @@ export class Controller {
       case "enrol":
         if (p.step === 3 && YES.test(u)) return this.confirmEnrol().then(() => true);
         if (NO.test(u)) {
-          this.set({ pending: null });
+          this.setFlow(null);
           this.say([`OK, I won't save it.`]);
           return true;
         }
@@ -447,7 +483,7 @@ export class Controller {
   async findButton(): Promise<void> {
     this.unlock();
     const p = this.state.pending;
-    if (p?.type === "check" && Date.now() <= p.expires) return this.runCheck(p);
+    if (p?.type === "check" && Date.now() <= p.expires) return this.exclusive(() => this.runCheck(p));
     const objects = await this.knownObjects();
     if (objects.length === 1) return this.find(objects[0]!.label);
     if (objects.length === 0) {
@@ -463,15 +499,17 @@ export class Controller {
     const ans = answerFind(query, snap.objects, snap.events, Date.now());
     const speech = [ans.speech];
     const obj = ans.object_ids.length === 1 ? snap.objects.find((o) => o.id === ans.object_ids[0]) : undefined;
-    if (obj && obj.thumbs.length > 0) {
+    // Offer a camera check, unless another flow (learning, appliance, plan) is under way.
+    const free = !this.state.pending || this.state.pending.type === "check";
+    if (obj && obj.thumbs.length > 0 && free) {
       const them = pronoun(obj.label);
       const last = [...snap.events].reverse().find((e) => e.object_id === obj.id && e.location && (e.kind === "placed" || e.kind === "seen"));
       if ((ans.answer_status === "confirmed" || ans.answer_status === "last_confirmed_only") && last) {
         speech.push(`To check, point the camera at ${stripPreposition(last.location)} and press Find again.`);
-        this.set({ pending: { type: "check", objectId: obj.id, label: obj.label, location: last.location, look: false, expires: Date.now() + CHECK_WINDOW_MS } });
+        this.setFlow({ type: "check", objectId: obj.id, label: obj.label, location: last.location, look: false, expires: Date.now() + CHECK_WINDOW_MS });
       } else if (ans.answer_status === "unknown") {
         if (!ans.speech.includes("press Find")) speech.push(`Point the camera around and press Find to look for ${them}.`);
-        this.set({ pending: { type: "check", objectId: obj.id, label: obj.label, location: "", look: true, expires: Date.now() + CHECK_WINDOW_MS } });
+        this.setFlow({ type: "check", objectId: obj.id, label: obj.label, location: "", look: true, expires: Date.now() + CHECK_WINDOW_MS });
       }
     }
     this.say(speech, "on_device");
@@ -481,7 +519,7 @@ export class Controller {
     const snap = await this.store.snapshot();
     const obj = snap.objects.find((o) => o.id === p.objectId);
     if (!obj) {
-      this.set({ pending: null });
+      this.setFlow(null);
       return;
     }
     const frames = await this.frames(1);
@@ -493,7 +531,12 @@ export class Controller {
     );
     if (!res?.match) return;
     const m = res.match;
-    if (!p.look && m.can_answer) {
+    // Guidance (blur, too dark) means the structured fields can't be trusted: speak it, store nothing.
+    if (res.status !== "answered" || !m.can_answer) {
+      this.say(res.speech, "live", res.metrics);
+      return;
+    }
+    if (!p.look) {
       if (m.visible && m.confidence >= THRESHOLDS.trust) {
         await this.addEvent({ object_id: obj.id, kind: "seen", location: p.location, source: "vision", confidence: m.confidence, identity_confidence: m.confidence });
         this.say([...res.speech, `Confirmed ${p.location}.`], "live", res.metrics);
@@ -527,7 +570,11 @@ export class Controller {
     return null;
   }
 
-  async remember(object: string, location: string): Promise<void> {
+  remember(object: string, location: string): Promise<void> {
+    return this.exclusive(() => this.doRemember(object, location));
+  }
+
+  private async doRemember(object: string, location: string): Promise<void> {
     const obj = await this.resolveObject(object);
     if (!obj) return;
     const them = pronoun(obj.label);
@@ -539,7 +586,8 @@ export class Controller {
       const res = await this.busy(`Checking your ${obj.label}`, () =>
         api.see({ skill: "match", frames, references: obj.thumbs.slice(0, 3), mode: this.mode, context: { label: obj.label, description: obj.description } }),
       );
-      if (res.ok && res.data.match) {
+      // Only an answered, usable match counts; guidance leaves the placement unconfirmed.
+      if (res.ok && res.data.match && res.data.status === "answered" && res.data.match.can_answer) {
         identity = res.data.match.visible ? res.data.match.confidence : 0;
         metrics = res.data.metrics;
       }
@@ -569,7 +617,7 @@ export class Controller {
       return;
     }
     const them = pronoun(name);
-    this.set({ pending: { type: "enrol", label: name, step: 0, thumbs: [], description: "" } });
+    this.setFlow({ type: "enrol", label: name, step: 0, thumbs: [], description: "" });
     this.say([`Let's learn your ${name}. Hold ${them} about an arm's length from the camera, on a plain surface if you can, and press the button.`]);
   }
 
@@ -580,11 +628,13 @@ export class Controller {
     this.buzz();
     const them = pronoun(p.label);
     const thumb = await thumbnail(frames[0]!);
+    if (this.state.pending !== p) return;
     if (p.step === 0) {
       const res = await this.busy("Learning", () => this.see("enrol", frames, { context: { label: p.label } }));
-      if (!res) return;
+      // Cancelled or replaced while waiting: drop the late result.
+      if (!res || this.state.pending !== p) return;
       if (res.status !== "answered" || !res.enrol) {
-        if (res.status === "refused") this.set({ pending: null });
+        if (res.status === "refused") this.setFlow(null);
         this.say(res.speech, "live", res.metrics);
         return;
       }
@@ -609,7 +659,7 @@ export class Controller {
     const obj: MemObject = { id: newId(), label: p.label, aliases: aliasesFor(p.label), description: p.description, thumbs: p.thumbs.slice(0, 3), created_ts: Date.now() };
     await this.store.putObject(obj);
     this.bumpMemory();
-    this.set({ pending: null });
+    this.setFlow(null);
     this.earcons.done();
     this.say([`Saved. I'll remember your ${p.label}.`, `When you put ${pronoun(p.label)} down, tell me, like: I'm putting my ${p.label} on the shelf.`], "on_device");
   }
@@ -628,18 +678,19 @@ export class Controller {
   // --- appliance helper -----------------------------------------------------
 
   startAppliance(task: string): void {
-    this.set({ pending: { type: "appliance_label", task } });
+    this.setFlow({ type: "appliance_label", task });
     this.say(["Point the camera at the model label. It's usually on the back, the side, or inside the door. Then press the button."]);
   }
 
-  private async readApplianceLabel(task: string): Promise<void> {
+  private async readApplianceLabel(p: Extract<Pending, { type: "appliance_label" }>): Promise<void> {
+    const task = p.task;
     const frames = await this.frames(2);
     if (!frames) return;
     this.earcons.capture();
     this.buzz();
     const res = await this.busy("Reading the label", () => this.see("label", frames));
-    if (!res) return;
-    if (!res.label?.model_number_verified) {
+    if (!res || this.state.pending !== p) return;
+    if (res.status !== "answered" || !res.label?.model_number_verified) {
       this.say(res.speech, "live", res.metrics, res.flags);
       return;
     }
@@ -648,6 +699,8 @@ export class Controller {
     const steps = await this.busy("Finding the manual", () =>
       api.appliance({ brand: l.brand, model_number: l.model_number, appliance_type: l.appliance_type, task, mode: this.mode }),
     );
+    // Cancelled while the manual was being fetched: say nothing more.
+    if (this.state.pending !== p) return;
     if (!steps.ok) {
       this.earcons.error();
       this.say(steps.error.speech);
@@ -655,11 +708,11 @@ export class Controller {
     }
     this.earcons.done();
     if (!steps.data.found_instructions) {
-      this.set({ pending: null });
+      this.setFlow(null);
       this.say(steps.data.speech, "live", steps.data.metrics);
       return;
     }
-    this.set({ pending: { type: "appliance_steps", modelNumber: l.model_number, steps: steps.data.steps, index: 0 } });
+    this.setFlow({ type: "appliance_steps", modelNumber: l.model_number, steps: steps.data.steps, index: 0 });
     this.say(steps.data.speech, "live", steps.data.metrics);
   }
 
@@ -675,8 +728,9 @@ export class Controller {
     if (!frames) return;
     this.earcons.capture();
     const res = await this.busy("Checking", () => this.see("step_check", frames, { context: { instruction: step.instruction, visual_check: step.visual_check } }));
-    if (!res) return;
-    const done = res.step?.step_done === "yes" && res.step.confidence >= THRESHOLDS.trust;
+    // Moved on ("next") or cancelled while checking: this result is about an old step.
+    if (!res || this.state.pending !== p) return;
+    const done = res.status === "answered" && res.step?.step_done === "yes" && res.step.confidence >= THRESHOLDS.trust;
     if (done) {
       this.earcons.done();
       return this.advanceAppliance(p, res.speech, res.metrics);
@@ -687,37 +741,43 @@ export class Controller {
   private async advanceAppliance(p: Extract<Pending, { type: "appliance_steps" }>, before: string[] = [], metrics: Metrics | null = null): Promise<void> {
     const next = p.index + 1;
     if (next >= p.steps.length) {
-      this.set({ pending: null });
+      this.setFlow(null);
       this.say([...before, "That was the last step. Well done."], "live", metrics);
       return;
     }
-    this.set({ pending: { ...p, index: next } });
+    this.setFlow({ ...p, index: next });
     this.say([...before, ...this.stepSpeech(p.steps, next)], "live", metrics);
   }
 
   // --- simple-mode plans ----------------------------------------------------
 
-  async startPlan(goal: string): Promise<void> {
+  startPlan(goal: string): Promise<void> {
+    return this.exclusive(() => this.doStartPlan(goal));
+  }
+
+  private async doStartPlan(goal: string): Promise<void> {
+    const epoch = ++this.flowEpoch;
     const frames = await this.frames(1);
     if (!frames) return;
     this.earcons.capture();
     this.buzz();
     const res = await this.busy("Making a plan", () => this.see("plan", frames, { context: { goal, user_name: this.settings.userName || undefined } }));
-    if (!res) return;
+    // Another flow started or this one was cancelled while planning.
+    if (!res || epoch !== this.flowEpoch) return;
     this.earcons.done();
-    if (res.plan && res.plan.steps.length > 0) this.set({ pending: { type: "plan", steps: res.plan.steps, index: 0 } });
+    if (res.status === "answered" && res.plan && res.plan.steps.length > 0) this.setFlow({ type: "plan", steps: res.plan.steps, index: 0 });
     this.say(res.speech, "live", res.metrics);
   }
 
   private async nextPlanStep(p: Extract<Pending, { type: "plan" }>): Promise<void> {
     const next = p.index + 1;
     if (next >= p.steps.length) {
-      this.set({ pending: null });
+      this.setFlow(null);
       const name = this.settings.userName ? `, ${this.settings.userName}` : "";
       this.say([`All done${name}!`, encouragement(next)]);
       return;
     }
-    this.set({ pending: { ...p, index: next } });
+    this.setFlow({ ...p, index: next });
     this.say(stepTurn(p.steps[next]!, next, p.steps.length, this.settings.userName));
   }
 

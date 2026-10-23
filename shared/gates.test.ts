@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { NUMBER_ABSTAIN, guidancePhrase, qualityGate, render, type NumberVerdict } from "./gates.js";
+import { NUMBER_ABSTAIN, NUMBER_DEFER, guidancePhrase, qualityGate, render, type NumberVerdict } from "./gates.js";
 import { PHARMACIST_NOTE, REFUSALS } from "./safety.js";
 import { item, read } from "./test-helpers.js";
 
@@ -116,6 +116,25 @@ describe("numbers", () => {
   it("hedges an adjudicated reading that the two frames did not agree on", () => {
     const r = render({ skill: "read", read: receipt, numbers: new Map([[1, { source: "adjudicated", reading: "$12.50", consistent: false }]]) });
     expect(r.speech[1]).toBe('I think it says "$12.50", but I\'m not sure.');
+  });
+  it("masks numbers inside Describe items and points to Read", () => {
+    const r = render({
+      skill: "describe",
+      read: read([item({ kind: "text", content: "Platform 9" }), item({ content: "a price tag showing $4.99", position_clock: 2 })]),
+    });
+    expect(r.speech).toEqual([
+      'There\'s text that says "Platform (number unclear)".',
+      "A price tag showing (number unclear) at 2 o'clock.",
+      NUMBER_DEFER,
+    ]);
+  });
+  it("never names a banknote's value from one frame in What-is", () => {
+    const r = render({ skill: "what_is", read: read([item({ content: "a 20 euro banknote", confidence: 0.95 })]) });
+    expect(r.speech).toEqual(["This is a (number unclear) euro banknote.", NUMBER_DEFER]);
+  });
+  it("treats a signal's colour as a traffic claim in a street scene", () => {
+    const r = render({ skill: "describe", read: read([item({ content: "a zebra crossing", position_clock: 12 }), item({ content: "a green light", position_clock: 1 })]) });
+    expect(r.speech).toEqual(["A zebra crossing at 12 o'clock.", REFUSALS.traffic]);
   });
   it("defers numbers in Describe to Read", () => {
     const r = render({ skill: "describe", read: read([item({ kind: "number", content: "$20", number_kind: "banknote" })]) });

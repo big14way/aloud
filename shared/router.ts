@@ -54,12 +54,36 @@ const RULES: ReadonlyArray<{ re: RegExp; skill: RouteSkill; args?: (m: RegExpExe
   { re: /\b(help|what can you do|commands)\b/i, skill: "help" },
 ];
 
+const QUESTION = /^\s*(did|do|does|have|has|had|who|where|what|which|is|are|was|were|can|could|should|would|will|why|how)\b|\?\s*$/i;
+const LOCATIONS = String.raw`(?:on|in|at|by|under|underneath|next to|behind|beside|inside)`;
+// Questions about where something is: "Did I leave my keys on the table?", "Who took my keys?", "Is my wallet in the car?"
+const ASKED_WHERE = [
+  new RegExp(String.raw`^\s*(?:did|have|had)\s+i\s+(?:leave|left|put|lose|lost|drop|dropped|forget|forgotten)\s+(?:my |the |our )?(.+?)(?:\s+${LOCATIONS}\s.*)?\??$`, "i"),
+  /^\s*who\s+(?:took|has|had|moved|picked up|borrowed)\s+(?:my |the |our )?(.+?)\??$/i,
+  new RegExp(String.raw`^\s*(?:is|are)\s+(?:my |the |our )(.+?)\s+${LOCATIONS}\s.*$`, "i"),
+];
+
+/** True for questions. Questions never write to memory. */
+export function isQuestion(utterance: string): boolean {
+  return QUESTION.test(utterance);
+}
+
 export function routeByRules(utterance: string, knownObjects: string[] = []): RouteDecision {
   const refusal = refusalFor(utterance);
   if (refusal) return refusal;
-  const placement = parsePlacement(utterance);
-  if (placement) return validateRoute("remember_placement", { object: placement.object, location: placement.location }, knownObjects);
+  const question = isQuestion(utterance);
+  if (question) {
+    for (const re of ASKED_WHERE) {
+      const m = re.exec(utterance.trim());
+      if (m?.[1]) return validateRoute("find", { object: m[1].replace(/[?.!]+$/, "") }, knownObjects);
+    }
+  } else {
+    const placement = parsePlacement(utterance);
+    if (placement) return validateRoute("remember_placement", { object: placement.object, location: placement.location }, knownObjects);
+  }
   for (const rule of RULES) {
+    // A question is never a pick-up ("Who took my keys?" is handled above).
+    if (question && rule.skill === "picked_up") continue;
     const m = rule.re.exec(utterance);
     if (m) return validateRoute(rule.skill, rule.args?.(m, utterance) ?? {}, knownObjects);
   }

@@ -17,6 +17,7 @@ describe("shapeViolations", () => {
   it("catches safety problems the rewrite introduced", () => {
     expect(shapeViolations(["A crossing ahead."], ["A crossing ahead. It is safe to cross."])).toContain("traffic claim");
     expect(shapeViolations(["A chair."], ["A chair. A man sits on it."])).toContain("added a person");
+    expect(shapeViolations(["A person, a few steps away."], ["A sad old man is near you."])).toEqual(expect.arrayContaining(["added a person", "added a detail about a person: sad"]));
   });
 });
 

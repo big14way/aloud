@@ -42,6 +42,9 @@ export interface LLM {
 }
 
 export class ModelError extends Error {
+  /** Billed calls made before the failure, so the daily budget still counts them. */
+  metrics: CallMetric[] = [];
+
   constructor(
     message: string,
     readonly kind: "rate_limited" | "bad_request" | "unavailable" | "invalid_output" | "aborted" | "not_configured",
@@ -49,6 +52,11 @@ export class ModelError extends Error {
   ) {
     super(message);
   }
+}
+
+/** Metrics of billed calls carried by a failure (empty for anything else). */
+export function errorMetrics(err: unknown): CallMetric[] {
+  return err instanceof ModelError ? err.metrics : [];
 }
 
 /** OpenAI-compatible client for Nebius Token Factory and the optional Serverless fast lane. */
@@ -150,10 +158,13 @@ function toModelError(err: unknown): ModelError {
 }
 
 // JSON mode can differ per model on Token Factory. If strict json_schema is
-// rejected, fall back to json_object, then to prompt-only JSON, and remember it.
+// rejected, fall back to json_object, then to prompt-only JSON. A fallback is
+// remembered only once it has worked, and errors that are clearly about something
+// else (context length, the image) never trigger one.
 const jsonModeByModel = new Map<string, JsonMode>();
 
 const FALLBACK: Record<JsonMode, JsonMode | null> = { json_schema: "json_object", json_object: "prompt", prompt: null };
+const NOT_A_FORMAT_ERROR = /context|too long|maximum|max_tokens|token limit|image|base64|decode/i;
 
 export function resetJsonModes(): void {
   jsonModeByModel.clear();
@@ -177,7 +188,8 @@ export async function chatJson<T>(
 ): Promise<JsonCall<T>> {
   const jsonSchema = jsonSchemaFor(schema);
   const metrics: CallMetric[] = [];
-  let mode: JsonMode = jsonModeByModel.get(req.model) ?? defaultMode;
+  const startMode: JsonMode = jsonModeByModel.get(req.model) ?? defaultMode;
+  let mode: JsonMode = startMode;
 
   // Some chat templates only accept a system message first, so the hint is merged into it.
   const withSchemaHint = (messages: Message[]): Message[] => {
@@ -199,12 +211,12 @@ export async function chatJson<T>(
           responseFormat: mode === "json_schema" ? { name, schema: jsonSchema } : mode === "json_object" ? "json_object" : undefined,
         });
         metrics.push(result.metric);
+        if (mode !== startMode) jsonModeByModel.set(req.model, mode);
         return result;
       } catch (err) {
         const next = FALLBACK[mode];
-        if (err instanceof ModelError && err.kind === "bad_request" && next) {
+        if (err instanceof ModelError && err.kind === "bad_request" && next && !NOT_A_FORMAT_ERROR.test(err.message)) {
           mode = next;
-          jsonModeByModel.set(req.model, mode);
           continue;
         }
         throw err;
@@ -212,21 +224,27 @@ export async function chatJson<T>(
     }
   };
 
-  const first = await call(req.messages);
-  const parsed = tryParse(first.text, schema);
-  if (parsed.ok) return { data: parsed.data, metrics };
+  try {
+    const first = await call(req.messages);
+    const parsed = tryParse(first.text, schema);
+    if (parsed.ok) return { data: parsed.data, metrics };
 
-  const retry = await call([
-    ...req.messages,
-    { role: "assistant", content: first.text.slice(0, 4000) },
-    {
-      role: "user",
-      content: `The previous answer was not valid JSON for the schema (${parsed.error}). Reply ONLY with the corrected JSON object.`,
-    },
-  ]);
-  const second = tryParse(retry.text, schema);
-  if (second.ok) return { data: second.data, metrics };
-  throw new ModelError(`Model returned invalid JSON twice: ${second.error}`, "invalid_output");
+    const retry = await call([
+      ...req.messages,
+      { role: "assistant", content: first.text.slice(0, 4000) },
+      {
+        role: "user",
+        content: `The previous answer was not valid JSON for the schema (${parsed.error}). Reply ONLY with the corrected JSON object.`,
+      },
+    ]);
+    const second = tryParse(retry.text, schema);
+    if (second.ok) return { data: second.data, metrics };
+    throw new ModelError(`Model returned invalid JSON twice: ${second.error}`, "invalid_output");
+  } catch (err) {
+    const e = err instanceof ModelError ? err : new ModelError(err instanceof Error ? err.message : String(err), "unavailable");
+    e.metrics = [...metrics, ...e.metrics.filter((m) => !metrics.includes(m))];
+    throw e;
+  }
 }
 
 function tryParse<T>(text: string, schema: z.ZodType<T>): { ok: true; data: T } | { ok: false; error: string } {

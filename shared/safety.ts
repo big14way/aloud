@@ -18,6 +18,8 @@ const TRAFFIC_INTENT = [
   /\b(can|should|may)\s+i\s+(cross|go now|walk now|go across)\b/i,
   /\bis\s+(the\s+)?(road|street|traffic|way)\s+(clear|safe|empty)\b/i,
   /\b(any|are there)\s+(cars|traffic|vehicles)\s+coming\b/i,
+  /\b(help me|how do i|guide me|walk me|take me)\s+(to\s+)?(cross|across)\b/i,
+  /\bcross(ing)?\s+(the\s+|this\s+)?(road|street|junction|intersection)\b/i,
   /\b(is|are|has)\s+(the\s+)?(traffic\s+|pedestrian\s+|crossing\s+|walk\s+)?(light|lights|signal|signals|sign|man)\s+(gone\s+|turned\s+|changed\s+)?(green|red|amber|on|lit|showing|changed)\b/i,
   /\bwhat\s+colou?r\s+is\s+(the\s+)?(traffic\s+|pedestrian\s+|crossing\s+)?(light|signal)\b/i,
 ];
@@ -52,31 +54,55 @@ export function checkUtterance(text: string): RefusalKind | null {
 }
 
 const PERSON_WORD =
-  /\b(man|men|woman|women|person|people|boy|boys|girl|girls|child|children|kid|kids|baby|babies|toddler|guy|guys|lady|ladies|gentleman|someone|somebody|he|she|him|her|his|hers|face|faces|pedestrian|pedestrians|crowd)\b/i;
+  /\b(man|men|woman|women|person|people|boy|boys|girl|girls|child|children|kid|kids|baby|babies|toddler|teenagers?|teens?|adults?|elderly|guy|guys|lady|ladies|gentleman|someone|somebody|he|she|him|her|his|hers|face|faces|pedestrians?|cyclists?|drivers?|riders?|passengers?|shoppers?|customers?|workers?|students?|officers?|policeman|policewoman|strangers?|neighbou?rs?|mother|father|mum|mom|dad|grandmother|grandfather|grandma|grandpa|wife|husband|son|daughter|brother|sister|crowd)\b/gi;
 
 const NAMED_PERSON =
   /\b(named|called|looks like|resembles|is probably|appears to be|photo of|picture of|poster of|portrait of|face of)\s+[A-Z][a-z]+/;
 
 /** True when a description mentions a person, so it must be rendered from the person template. */
 export function mentionsPerson(content: string): boolean {
-  return PERSON_WORD.test(content) || NAMED_PERSON.test(content);
+  return personWords(content).size > 0 || NAMED_PERSON.test(content);
+}
+
+/** The person words in a text, lowercased. Used to catch rewrites that add detail about someone. */
+export function personWords(content: string): Set<string> {
+  return new Set([...content.matchAll(PERSON_WORD)].map((m) => m[0].toLowerCase()));
 }
 
 const TRAFFIC_CLAIM = [
   /\b(safe|clear|okay|ok|fine)\s+to\s+(cross|walk|go)\b/i,
-  /\b(no|zero)\s+(cars|traffic|vehicles)\b/i,
+  /\bno\s+(\w+\s+)?(cars|traffic|vehicles|buses|trucks)\b/i,
+  /\bzero\s+(cars|traffic|vehicles)\b/i,
+  /\bclear\s+of\s+(cars|traffic|vehicles)\b/i,
   /\btraffic\s+(is|has)\s+(clear|light|stopped|cleared)\b/i,
-  /\b(road|street)\s+is\s+(clear|empty|safe)\b/i,
-  /\byou\s+can\s+(cross|go|walk)\b/i,
-  // A signal's colour or state is as good as a crossing judgement to someone who can't check it.
-  /\b(traffic|pedestrian|crossing|walk)\s+(light|signal)s?\b[^.]*\b(green|red|amber|yellow|walk|go|stop|lit)\b/i,
-  /\b(green|red|amber)\s+(light|man|signal|figure)\b/i,
-  /\b(light|signal)\s+(is|shows|turns?|turned)\s+(green|red|amber|yellow)\b/i,
+  /\b(road|street|crossing|crosswalk|intersection|junction)\s+(is|looks|seems)\s+(clear|empty|safe|free)\b/i,
+  /\byou\s+can\s+(cross|go now|walk now)\b/i,
+  /\b(green|red)\s+man\b/i,
 ];
 
-/** True when model text makes a traffic-safety judgement Aloud must never make. */
-export function makesTrafficClaim(content: string): boolean {
-  return TRAFFIC_CLAIM.some((re) => re.test(content));
+// A signal's colour or state is as good as a crossing judgement to someone who can't
+// check it. "A green light" alone could be on a kettle, so these count only in a traffic context.
+const SIGNAL_STATE = [
+  /\b(green|red|amber|yellow|flashing)\s+(\w+\s+)?(light|lights|signal|signals|figure)\b/i,
+  /\b(light|signal|figure)\s+(is|shows|turns?|turned|has\s+turned)\s+(green|red|amber|yellow|on|lit|flashing)\b/i,
+  /\b(traffic|pedestrian|crossing|walk)\s+(light|signal|sign)s?\b[^.]*\b(green|red|amber|yellow|walk|go|stop|lit|flashing)\b/i,
+];
+
+const TRAFFIC_CONTEXT =
+  /\b(traffic|pedestrian|crossing|crosswalk|zebra|road|street|intersection|junction|kerb|curb|cars?|vehicles?|bus|buses|trucks?|lorry|lorries|walk\s+(signal|sign|light)|stop\s?lights?)\b/i;
+
+/** True when a text is about roads or traffic, so a signal's state becomes a crossing judgement. */
+export function hasTrafficContext(content: string): boolean {
+  return TRAFFIC_CONTEXT.test(content);
+}
+
+/**
+ * True when model text makes a traffic-safety judgement Aloud must never make.
+ * `trafficContext`: the rest of the scene is about a road, so "a green light" counts too.
+ */
+export function makesTrafficClaim(content: string, trafficContext = false): boolean {
+  if (TRAFFIC_CLAIM.some((re) => re.test(content))) return true;
+  return (trafficContext || hasTrafficContext(content)) && SIGNAL_STATE.some((re) => re.test(content));
 }
 
 const MEDICINE =

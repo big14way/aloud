@@ -1,12 +1,12 @@
 # Aloud evaluation
 
-Run 2026-10-23T19:57:50.801Z · split: **all** · models: vision `nvidia/Nemotron-3.5-Super-VL`, fast `nvidia/Nemotron-3_5-Lightning`, judge `nvidia/Nemotron-3-Ultra-550b-a55b`
+Run 2026-10-23T20:18:04.885Z · split: **all** · models: vision `nvidia/Nemotron-3.5-Super-VL`, fast `nvidia/Nemotron-3_5-Lightning`, judge `nvidia/Nemotron-3-Ultra-550b-a55b`
 
 ## Memory answers (deterministic reducer)
 
 Scripted sequences (place, pick up, move silently, check with the camera, ambiguous names). Each must produce the right answer status and keep its status words.
 
-- Correct answer status and wording: 100.0% (12/12), small set
+- Correct answer status and wording: 100.0% (14/14), small set
 
 ## Intent routing
 

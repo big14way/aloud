@@ -150,7 +150,7 @@ Measured so far:
 
 | What | Result |
 |---|---|
-| Memory scenarios (place, pick up, move silently, camera check, ambiguous names) | 12/12 correct status and wording (small set) |
+| Memory scenarios (place, pick up, move silently, camera check, user-stated move, ambiguous names) | 14/14 correct status and wording (small set) |
 | Routing, offline rules lane, dev split (rules were tuned on this) | 49/49 |
 | Routing, offline rules lane, held-out split | 26/33 (78.8%). The paraphrases are what the Lightning lane is for. |
 

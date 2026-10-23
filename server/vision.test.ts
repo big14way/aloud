@@ -158,6 +158,20 @@ describe("enrol, match, label, step check", () => {
     expect(b.speech).toEqual(["I can't read the model number reliably. Move closer to the label and hold still."]);
   });
 
+  it("label: a guidance answer is never verified, even if both frames agree", async () => {
+    const blurry = JSON.stringify({ ...ok, image_quality: { ...ok.image_quality, blur: true }, appliance_type: "microwave", brand: "Acme", model_number: "MW-2041", confidence: 0.6 });
+    const { ctx } = setup(() => blurry);
+    const res = await see(ctx, req({ skill: "label", frames: [FRAME_A, FRAME_B] }));
+    expect(res.status).toBe("guidance");
+    expect(res.label?.model_number_verified).toBe(false);
+  });
+
+  it("charges billed calls to the budget when a request fails", async () => {
+    const { ctx } = setup(() => "not json at all");
+    await expect(see(ctx, req({ skill: "describe", frames: [FRAME_A] }))).rejects.toBeTruthy();
+    expect(ctx.spend.snapshot().spent_usd).toBeGreaterThan(0);
+  });
+
   it("step check: screens the model's observation", async () => {
     const { ctx } = setup(() => JSON.stringify({ ...ok, step_done: "no", confidence: 0.8, observation: "The Start button is not lit yet. Press it firmly." }));
     const res = await see(ctx, req({ skill: "step_check", frames: [FRAME_A], context: { instruction: "Press Start", visual_check: "Start is lit" } }));
@@ -183,6 +197,24 @@ describe("simple mode", () => {
     expect(userText(fast!)).toContain("A laundry basket at 3 o'clock.");
     expect(res.plan?.steps).toEqual(["Put the clothes in the basket.", "Put the books on the shelf."]);
     expect(res.speech).toEqual(["Let's tidy the floor.", "Step 1: Put the clothes in the basket.", "You're doing great, Ada.", "Did that work?"]);
+  });
+
+  it("screens the plan summary and steps like any model text", async () => {
+    const { ctx } = setup((r) => {
+      if (r.lane === "fast") return JSON.stringify({ summary: "The road is clear, so you can cross now.", steps: ["Ask the man by the door for help.", "Put the cup in the sink."], encouragement: "Go!" });
+      return visionJson([{ content: "a cup", position_clock: 12 }]);
+    });
+    const res = await see(ctx, req({ skill: "plan", frames: [FRAME_A], mode: "simple", context: { goal: "clear the table" } }));
+    expect(res.plan?.steps).toEqual(["Put the cup in the sink."]);
+    expect(res.speech[0]).toBe("Let's clear the table.");
+    expect(res.speech.join(" ")).not.toMatch(/cross|man/);
+  });
+
+  it("refuses an unsafe goal before looking", async () => {
+    const { llm, ctx } = setup(() => visionJson([]));
+    const res = await see(ctx, req({ skill: "plan", frames: [FRAME_A], mode: "simple", context: { goal: "cross the road" } }));
+    expect(res.status).toBe("refused");
+    expect(llm.requests).toHaveLength(0);
   });
 
   it("keeps Read verbatim in simple mode", async () => {

@@ -1,9 +1,9 @@
 import { z } from "zod";
 import { checkEasy, enforceEasy, plainWords } from "../shared/easy.js";
 import { numericTokens } from "../shared/numbers.js";
-import { givesDosingAdvice, makesTrafficClaim, mentionsPerson } from "../shared/safety.js";
+import { givesDosingAdvice, hasTrafficContext, makesTrafficClaim, mentionsPerson, personWords } from "../shared/safety.js";
 import { type Ctx, type Meter, withTextLane } from "./context.js";
-import { chatJson } from "./llm.js";
+import { chatJson, errorMetrics } from "./llm.js";
 
 // Easy-language rewrite. The model rewords; code checks that every fact, number,
 // quote and hedge survived, and falls back to a deterministic rewrite if not.
@@ -46,9 +46,19 @@ export function shapeViolations(input: string[], output: string[], keep: string[
   for (const n of outNums) if (!inNums.includes(n)) out.push(`added number ${n}`);
   const joinedOut = output.join(" ");
   for (const q of quotes(input.join(" "))) if (!joinedOut.includes(q)) out.push(`changed quote "${q}"`);
-  if (output.some(makesTrafficClaim)) out.push("traffic claim");
-  if (output.some(givesDosingAdvice)) out.push("dosing advice");
-  if (!input.some(mentionsPerson) && output.some(mentionsPerson)) out.push("added a person");
+  const street = input.some((s) => hasTrafficContext(s));
+  if (output.some((s) => makesTrafficClaim(s, street))) out.push("traffic claim");
+  if (output.some((s) => givesDosingAdvice(s))) out.push("dosing advice");
+  // Rewording may not add anyone, or any detail about someone ("a person" -> "a sad old man").
+  const before = personWords(input.join(" "));
+  const added = [...personWords(output.join(" "))].filter((w) => !before.has(w));
+  if (added.length > 0 || (!input.some((s) => mentionsPerson(s)) && output.some((s) => mentionsPerson(s)))) out.push("added a person");
+  if (/\b(happy|sad|angry|upset|smiling|crying|old|young|elderly|tired|scared|pregnant|sick|drunk)\b/i.test(output.join(" ")) && before.size > 0) {
+    const inText = input.join(" ").toLowerCase();
+    for (const w of output.join(" ").toLowerCase().match(/\b(happy|sad|angry|upset|smiling|crying|old|young|elderly|tired|scared|pregnant|sick|drunk)\b/g) ?? []) {
+      if (!inText.includes(w)) out.push(`added a detail about a person: ${w}`);
+    }
+  }
   return out;
 }
 
@@ -92,7 +102,8 @@ export async function shapeEasy(ctx: Ctx, meter: Meter, sentences: string[], kee
       if (shapeViolations(sentences, second, keep).length === 0) return { speech: second, source: "model" as const };
       return { speech: enforceEasy(sentences), source: "fallback" as const };
     });
-  } catch {
+  } catch (err) {
+    meter.add(errorMetrics(err));
     return { speech: enforceEasy(sentences), source: "fallback" };
   }
 }

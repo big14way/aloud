@@ -3,7 +3,7 @@ import { enforceEasy } from "../shared/easy.js";
 import { givesDosingAdvice, makesTrafficClaim, mentionsPerson } from "../shared/safety.js";
 import { StepPlan } from "../shared/schemas.js";
 import { type Ctx, Meter } from "./context.js";
-import { chatJson } from "./llm.js";
+import { chatJson, errorMetrics } from "./llm.js";
 import { Tavily, rankManualResults } from "./tavily.js";
 
 const MAX_EXCERPT_CHARS = 12_000;
@@ -59,6 +59,7 @@ export async function applianceSteps(ctx: Ctx, req: ApplianceRequest, tavily = n
     .filter(Boolean)
     .join("\n");
 
+  // Calls billed before a failure still count against the daily budget.
   const res = await chatJson(
     ctx.llm,
     {
@@ -78,7 +79,10 @@ export async function applianceSteps(ctx: Ctx, req: ApplianceRequest, tavily = n
     StepPlan,
     "step_plan",
     ctx.cfg.jsonMode,
-  );
+  ).catch((err: unknown) => {
+    meter.add(errorMetrics(err));
+    throw err;
+  });
   meter.add(res.metrics);
   const plan = res.data;
   let steps = plan.steps

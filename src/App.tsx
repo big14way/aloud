@@ -53,10 +53,17 @@ export function App() {
     }
   }, [controller]);
 
+  /** The Talk button and key toggle: a second press sends what was heard. */
+  const toggleTalk = useCallback(() => {
+    if (controller.getState().listening) controller.stopListening();
+    else talk();
+  }, [controller, talk]);
+
   // Keyboard and Bluetooth clicker shortcuts.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (panel || !settings.disclaimerAccepted || e.metaKey || e.ctrlKey || e.altKey) return;
+      // Held keys auto-repeat; one press is one action.
+      if (e.repeat || panel || !settings.disclaimerAccepted || e.metaKey || e.ctrlKey || e.altKey) return;
       const target = e.target as HTMLElement;
       if (target.closest("input, textarea, select")) return;
       const onButton = Boolean(target.closest("button"));
@@ -95,7 +102,7 @@ export function App() {
         case "M":
         case "t":
         case "T":
-          run(talk);
+          run(toggleTalk);
           break;
         case "l":
         case "L":
@@ -118,7 +125,7 @@ export function App() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [controller, panel, settings.disclaimerAccepted, talk]);
+  }, [controller, panel, settings.disclaimerAccepted, toggleTalk]);
 
   const quick = (fn: () => unknown) => () => {
     controller.unlock();
@@ -182,7 +189,7 @@ export function App() {
           <button type="button" onClick={quick(() => controller.findButton())}>
             Find <kbd>F</kbd>
           </button>
-          <button type="button" onClick={quick(talk)} aria-pressed={state.listening}>
+          <button type="button" onClick={quick(toggleTalk)} aria-pressed={state.listening}>
             {state.listening ? "Listening…" : "Talk"} <kbd>T</kbd>
           </button>
           <button type="button" onClick={quick(() => controller.repeat())}>

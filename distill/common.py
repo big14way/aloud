@@ -172,7 +172,11 @@ def canonical_number(token):
         value = float(body)
         text = str(int(value)) if value == int(value) else repr(value)
         return f"{currency}{text}{percent}"
-    return f"{currency}{re.sub(r'[^0-9]', '', body)}{percent}"
+    digits = re.sub(r"[^0-9]", "", body)
+    # Phone numbers and dates: separators vary, the digits don't. Short numbers keep theirs.
+    if len(digits) >= 7:
+        return f"{currency}{digits}{percent}"
+    return f"{currency}{body}{percent}"
 
 
 def numbers(text):
