@@ -1,0 +1,827 @@
+{
+  "letter|what_is|standard": {
+    "speech": [
+      "This is a white printed letter on a brown surface.",
+      "The label says \"Riverside Library\".",
+      "The label says \"(number unclear) October (number unclear)\".",
+      "Press Read to check the number."
+    ],
+    "metrics": {
+      "total_ms": 1625,
+      "cost_usd": 0.000779,
+      "calls": [
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 1614,
+          "prompt_tokens": 1631,
+          "completion_tokens": 322,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.0007790999999999999
+        }
+      ]
+    },
+    "recorded_at": "2026-10-23T21:14:47.903Z"
+  },
+  "letter|read|standard": {
+    "speech": [
+      "Riverside Library",
+      "4 Mill Lane",
+      "Ashford Green",
+      "12 October 2026",
+      "Dear Sam Okafor,",
+      "Two books you borrowed are due back on 14 November 2026. You can renew them by phone on 0161 496 0142.",
+      "Our opening hours are 9:00 to 17:00, Monday to Saturday.",
+      "Kind regards,",
+      "Maya Lindqvist",
+      "Library Services"
+    ],
+    "metrics": {
+      "total_ms": 2665,
+      "cost_usd": 0.002241,
+      "calls": [
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 2663,
+          "prompt_tokens": 1668,
+          "completion_tokens": 684,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.001116
+        },
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 2176,
+          "prompt_tokens": 1668,
+          "completion_tokens": 694,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.001125
+        }
+      ]
+    },
+    "recorded_at": "2026-10-23T21:14:50.571Z"
+  },
+  "letter_cut_off|describe|standard": {
+    "speech": [
+      "There's text that says \"Riverside Library (number unclear) Mill Lane Ashford Green\".",
+      "There's text that says \"(number unclear) October (number unclear)\".",
+      "There's text that says \"Dear Sam Okafor\".",
+      "There's text that says \"Two books you borrowed are due back on (number unclear) November (number unclear). You can renew them by phone on (number unclear) (number unclear) (number unclear)\".",
+      "Press Read to check the number.",
+      "It's cut off on the right. Move the phone right."
+    ],
+    "metrics": {
+      "total_ms": 3886,
+      "cost_usd": 0.002097,
+      "calls": [
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 2202,
+          "prompt_tokens": 1727,
+          "completion_tokens": 500,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.0009681000000000001
+        },
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 1682,
+          "prompt_tokens": 2263,
+          "completion_tokens": 500,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.0011289000000000002
+        }
+      ]
+    },
+    "recorded_at": "2026-10-23T21:14:54.459Z"
+  },
+  "letter_cut_off|what_is|standard": {
+    "speech": [
+      "This is a white printed library letter on a brown surface.",
+      "The label says \"Riverside Library\".",
+      "The label says \"(number unclear) October (number unclear)\".",
+      "Press Read to check the number.",
+      "It's cut off on the right. Move the phone right."
+    ],
+    "metrics": {
+      "total_ms": 1443,
+      "cost_usd": 0.00078,
+      "calls": [
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 1441,
+          "prompt_tokens": 1631,
+          "completion_tokens": 323,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.00078
+        }
+      ]
+    },
+    "recorded_at": "2026-10-23T21:14:55.903Z"
+  },
+  "letter_cut_off|read|standard": {
+    "speech": [
+      "Riverside Library",
+      "4 Mill Lane",
+      "Ashford Green",
+      "12 October 2026",
+      "Dear Sam Okafor,",
+      "Two books you borrowed are due back on 14 November 2026. You can renew them by phone on 0161 496 0142.",
+      "Our opening hours are 9:00 to 17:00, Monday to Saturday.",
+      "Kind regards,",
+      "Maya Lindqvist",
+      "Library Services",
+      "The text is cut off on the right. Move the phone right."
+    ],
+    "metrics": {
+      "total_ms": 2705,
+      "cost_usd": 0.002342,
+      "calls": [
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 2644,
+          "prompt_tokens": 1668,
+          "completion_tokens": 694,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.001125
+        },
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 2703,
+          "prompt_tokens": 1668,
+          "completion_tokens": 796,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.0012167999999999999
+        }
+      ]
+    },
+    "recorded_at": "2026-10-23T21:14:58.611Z"
+  },
+  "letter_dark|describe|standard": {
+    "speech": [
+      "Too dark. Try a light, or move toward the window."
+    ],
+    "metrics": {
+      "total_ms": 1552,
+      "cost_usd": 0.000964,
+      "calls": [
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 1550,
+          "prompt_tokens": 1727,
+          "completion_tokens": 495,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.0009636
+        }
+      ]
+    },
+    "recorded_at": "2026-10-23T21:15:00.164Z"
+  },
+  "letter_dark|what_is|standard": {
+    "speech": [
+      "Too dark. Try a light, or move toward the window."
+    ],
+    "metrics": {
+      "total_ms": 1572,
+      "cost_usd": 0.000781,
+      "calls": [
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 1571,
+          "prompt_tokens": 1631,
+          "completion_tokens": 324,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.0007809
+        }
+      ]
+    },
+    "recorded_at": "2026-10-23T21:15:01.736Z"
+  },
+  "letter_dark|read|standard": {
+    "speech": [
+      "Too dark. Try a light, or move toward the window."
+    ],
+    "metrics": {
+      "total_ms": 2291,
+      "cost_usd": 0.00226,
+      "calls": [
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 2291,
+          "prompt_tokens": 1668,
+          "completion_tokens": 692,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.0011232
+        },
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 2289,
+          "prompt_tokens": 1668,
+          "completion_tokens": 707,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.0011367
+        }
+      ]
+    },
+    "recorded_at": "2026-10-23T21:15:04.029Z"
+  },
+  "receipt|what_is|standard": {
+    "speech": [
+      "This is a white paper receipt from Corner Market.",
+      "The label says \"CORNER MARKET\".",
+      "The label says \"(number unclear) Station Road\".",
+      "Press Read to check the number."
+    ],
+    "metrics": {
+      "total_ms": 1474,
+      "cost_usd": 0.000782,
+      "calls": [
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 1472,
+          "prompt_tokens": 1631,
+          "completion_tokens": 325,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.0007817999999999999
+        }
+      ]
+    },
+    "recorded_at": "2026-10-23T21:15:09.147Z"
+  },
+  "receipt|read|standard": {
+    "speech": [
+      "CORNER MARKET",
+      "18 Station Road",
+      "23/10/2026 10:42",
+      "Bread 2.40",
+      "Milk 1L 1.35",
+      "Apples x4 3.20",
+      "Rice 1kg 5.55",
+      "TOTAL $12.50",
+      "CARD $12.50",
+      "Thank you"
+    ],
+    "metrics": {
+      "total_ms": 2340,
+      "cost_usd": 0.002255,
+      "calls": [
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 2195,
+          "prompt_tokens": 1668,
+          "completion_tokens": 692,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.0011232
+        },
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 2339,
+          "prompt_tokens": 1668,
+          "completion_tokens": 702,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.0011322
+        }
+      ]
+    },
+    "recorded_at": "2026-10-23T21:15:11.490Z"
+  },
+  "receipt_blurry|describe|standard": {
+    "speech": [
+      "The picture is blurry. Hold the phone still and press again."
+    ],
+    "metrics": {
+      "total_ms": 1376,
+      "cost_usd": 0.000717,
+      "calls": [
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 1376,
+          "prompt_tokens": 1727,
+          "completion_tokens": 221,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.000717
+        }
+      ]
+    },
+    "recorded_at": "2026-10-23T21:15:12.867Z"
+  },
+  "receipt_blurry|what_is|standard": {
+    "speech": [
+      "The picture is blurry. Hold the phone still and press again."
+    ],
+    "metrics": {
+      "total_ms": 1383,
+      "cost_usd": 0.000727,
+      "calls": [
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 1383,
+          "prompt_tokens": 1631,
+          "completion_tokens": 264,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.0007268999999999999
+        }
+      ]
+    },
+    "recorded_at": "2026-10-23T21:15:14.251Z"
+  },
+  "receipt_blurry|read|standard": {
+    "speech": [
+      "The picture is blurry. Hold the phone still and press again."
+    ],
+    "metrics": {
+      "total_ms": 1083,
+      "cost_usd": 0.00116,
+      "calls": [
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 1082,
+          "prompt_tokens": 1668,
+          "completion_tokens": 87,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.0005786999999999999
+        },
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 899,
+          "prompt_tokens": 1668,
+          "completion_tokens": 90,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.0005813999999999999
+        }
+      ]
+    },
+    "recorded_at": "2026-10-23T21:15:15.337Z"
+  },
+  "price_tag|describe|standard": {
+    "speech": [
+      "A store shelf at 6 o'clock, within reach.",
+      "There's text that says \"Oat Biscuits (number unclear) g (number unclear) (number unclear) per (number unclear) g\".",
+      "Press Read to check the number."
+    ],
+    "metrics": {
+      "total_ms": 868,
+      "cost_usd": 0.000705,
+      "calls": [
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 867,
+          "prompt_tokens": 1727,
+          "completion_tokens": 208,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.0007053000000000001
+        }
+      ]
+    },
+    "recorded_at": "2026-10-23T21:15:16.207Z"
+  },
+  "price_tag|what_is|standard": {
+    "speech": [
+      "This is a yellow rectangular price tag.",
+      "The label says \"Oat Biscuits (number unclear) g\".",
+      "Press Read to check the number."
+    ],
+    "metrics": {
+      "total_ms": 1921,
+      "cost_usd": 0.000783,
+      "calls": [
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 1919,
+          "prompt_tokens": 1631,
+          "completion_tokens": 326,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.0007827
+        }
+      ]
+    },
+    "recorded_at": "2026-10-23T21:15:18.129Z"
+  },
+  "price_tag|read|standard": {
+    "speech": [
+      "Oat Biscuits 300 g",
+      "$4.99",
+      "$1.66 per 100 g"
+    ],
+    "metrics": {
+      "total_ms": 1675,
+      "cost_usd": 0.001466,
+      "calls": [
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 1390,
+          "prompt_tokens": 1668,
+          "completion_tokens": 259,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.0007335
+        },
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 1674,
+          "prompt_tokens": 1668,
+          "completion_tokens": 258,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.0007326
+        }
+      ]
+    },
+    "recorded_at": "2026-10-23T21:15:19.807Z"
+  },
+  "can_label|describe|standard": {
+    "speech": [
+      "A plain brown surface.",
+      "There's text that says \"HILLFIELD\".",
+      "There's text that says \"Chopped Tomatoes\".",
+      "There's text that says \"in tomato juice\"."
+    ],
+    "metrics": {
+      "total_ms": 1816,
+      "cost_usd": 0.00084,
+      "calls": [
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 1815,
+          "prompt_tokens": 1727,
+          "completion_tokens": 358,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.0008403
+        }
+      ]
+    },
+    "recorded_at": "2026-10-23T21:15:21.624Z"
+  },
+  "can_label|what_is|standard": {
+    "speech": [
+      "This is a red and silver can of Hillfield Chopped Tomatoes in tomato juice, (number unclear) g.",
+      "The label says \"HILLFIELD\".",
+      "The label says \"Chopped Tomatoes\".",
+      "Press Read to check the number."
+    ],
+    "metrics": {
+      "total_ms": 2077,
+      "cost_usd": 0.00083,
+      "calls": [
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 2075,
+          "prompt_tokens": 1631,
+          "completion_tokens": 379,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.0008304
+        }
+      ]
+    },
+    "recorded_at": "2026-10-23T21:15:23.702Z"
+  },
+  "kitchen|describe|standard": {
+    "speech": [
+      "Careful: a knife with a black handle on a cutting board at 4 o'clock, within reach.",
+      "A kitchen.",
+      "A silver kettle with a black handle and lid at 12 o'clock, within reach.",
+      "A blue mug with a handle at 8 o'clock, within reach.",
+      "A brown cutting board at 4 o'clock, within reach."
+    ],
+    "metrics": {
+      "total_ms": 1489,
+      "cost_usd": 0.000855,
+      "calls": [
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 1489,
+          "prompt_tokens": 1727,
+          "completion_tokens": 374,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.0008547
+        }
+      ]
+    },
+    "recorded_at": "2026-10-23T21:15:25.192Z"
+  },
+  "kitchen|what_is|standard": {
+    "speech": [
+      "This is a silver metal kettle with a black handle and lid."
+    ],
+    "metrics": {
+      "total_ms": 1737,
+      "cost_usd": 0.000728,
+      "calls": [
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 1736,
+          "prompt_tokens": 1631,
+          "completion_tokens": 265,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.0007277999999999999
+        }
+      ]
+    },
+    "recorded_at": "2026-10-23T21:15:26.930Z"
+  },
+  "room|describe|standard": {
+    "speech": [
+      "Careful: a black oval obstacle on the floor at 8 o'clock, within reach.",
+      "Careful: a blue oval obstacle on the floor at 7 o'clock, within reach.",
+      "Careful: a red oval obstacle on the floor at 5 o'clock, within reach.",
+      "A room with a beige wall and brown floor.",
+      "A white rectangular board with a blue top edge at 9 o'clock, within reach.",
+      "A brown shelf with a green and an orange block at 1 o'clock, a few steps away.",
+      "A tan square mat with vertical stripes at 4 o'clock, within reach."
+    ],
+    "metrics": {
+      "total_ms": 1873,
+      "cost_usd": 0.000968,
+      "calls": [
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 1871,
+          "prompt_tokens": 1727,
+          "completion_tokens": 500,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.0009681000000000001
+        }
+      ]
+    },
+    "recorded_at": "2026-10-23T21:15:28.804Z"
+  },
+  "room|plan|simple": {
+    "speech": [
+      "Pick up and place obstacles in the box.",
+      "Step 1: Carefully pick up the dark oval obstacle.",
+      "You're doing great.",
+      "Did that work?"
+    ],
+    "metrics": {
+      "total_ms": 2400,
+      "cost_usd": 0.000946,
+      "calls": [
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 1775,
+          "prompt_tokens": 1727,
+          "completion_tokens": 437,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.0009114000000000001
+        },
+        {
+          "lane": "fast",
+          "model": "nvidia/Nemotron-3_5-Lightning",
+          "latency_ms": 610,
+          "prompt_tokens": 227,
+          "completion_tokens": 89,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.000034979999999999994
+        }
+      ]
+    },
+    "recorded_at": "2026-10-23T21:15:34.097Z"
+  },
+  "keys_shelf|describe|standard": {
+    "speech": [
+      "Careful: a white object with a jagged edge on the floor at 6 o'clock, within reach.",
+      "A room with a beige wall and brown floor.",
+      "A pink rectangular object on the floor at 9 o'clock, within reach.",
+      "A yellow ring on the floor at 6 o'clock, within reach."
+    ],
+    "metrics": {
+      "total_ms": 1384,
+      "cost_usd": 0.000803,
+      "calls": [
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 1384,
+          "prompt_tokens": 1727,
+          "completion_tokens": 316,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.0008025
+        }
+      ]
+    },
+    "recorded_at": "2026-10-23T21:15:35.482Z"
+  },
+  "keys_shelf|what_is|standard": {
+    "speech": [
+      "This is a yellow ring with a pink rectangular object and two white cylindrical objects."
+    ],
+    "metrics": {
+      "total_ms": 826,
+      "cost_usd": 0.000613,
+      "calls": [
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 826,
+          "prompt_tokens": 1631,
+          "completion_tokens": 137,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.0006125999999999999
+        }
+      ]
+    },
+    "recorded_at": "2026-10-23T21:15:36.308Z"
+  },
+  "microwave|what_is|standard": {
+    "speech": [
+      "This is a white microwave oven with a black door and a control panel on the right.",
+      "The label says \"ACME HOME\".",
+      "The label says \"Model: MW-(number unclear)\".",
+      "Press Read to check the number."
+    ],
+    "metrics": {
+      "total_ms": 1513,
+      "cost_usd": 0.000786,
+      "calls": [
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 1512,
+          "prompt_tokens": 1631,
+          "completion_tokens": 330,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.0007863
+        }
+      ]
+    },
+    "recorded_at": "2026-10-23T21:15:41.489Z"
+  },
+  "microwave|label|standard": {
+    "speech": [
+      "This is an ACME HOME microwave, model MW-2041."
+    ],
+    "metrics": {
+      "total_ms": 1382,
+      "cost_usd": 0.001162,
+      "calls": [
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 1326,
+          "prompt_tokens": 1636,
+          "completion_tokens": 100,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.0005807999999999999
+        },
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 1381,
+          "prompt_tokens": 1636,
+          "completion_tokens": 100,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.0005807999999999999
+        }
+      ]
+    },
+    "recorded_at": "2026-10-23T21:15:42.875Z"
+  },
+  "sign|describe|standard": {
+    "speech": [
+      "A library entrance area at 12 o'clock, within reach.",
+      "There's text that says \"LIBRARY Open (number unclear) to (number unclear) Monday to Saturday Entrance on the left ←\".",
+      "Press Read to check the number."
+    ],
+    "metrics": {
+      "total_ms": 1230,
+      "cost_usd": 0.000707,
+      "calls": [
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 1222,
+          "prompt_tokens": 1727,
+          "completion_tokens": 210,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.0007071
+        }
+      ]
+    },
+    "recorded_at": "2026-10-23T21:15:44.107Z"
+  },
+  "sign|what_is|standard": {
+    "speech": [
+      "This is a blue rectangular library sign with white text on a post.",
+      "The label says \"LIBRARY\".",
+      "The label says \"Open (number unclear) to (number unclear)\".",
+      "Press Read to check the number."
+    ],
+    "metrics": {
+      "total_ms": 1866,
+      "cost_usd": 0.00084,
+      "calls": [
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 1864,
+          "prompt_tokens": 1631,
+          "completion_tokens": 390,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.0008403
+        }
+      ]
+    },
+    "recorded_at": "2026-10-23T21:15:45.974Z"
+  },
+  "sign|read|standard": {
+    "speech": [
+      "LIBRARY",
+      "Open 9:00 to 17:00",
+      "Monday to Saturday",
+      "Entrance on the left ←"
+    ],
+    "metrics": {
+      "total_ms": 1628,
+      "cost_usd": 0.001561,
+      "calls": [
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 1472,
+          "prompt_tokens": 1668,
+          "completion_tokens": 311,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.0007802999999999999
+        },
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 1626,
+          "prompt_tokens": 1668,
+          "completion_tokens": 311,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.0007802999999999999
+        }
+      ]
+    },
+    "recorded_at": "2026-10-23T21:15:47.604Z"
+  },
+  "crossing|describe|standard": {
+    "speech": [
+      "Careful: a traffic light on a pole at the right edge of the crosswalk at 3 o'clock, a few steps away.",
+      "Careful: a crosswalk with white stripes on the road at 6 o'clock, within reach.",
+      "A street intersection."
+    ],
+    "metrics": {
+      "total_ms": 1445,
+      "cost_usd": 0.000753,
+      "calls": [
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 1444,
+          "prompt_tokens": 1727,
+          "completion_tokens": 261,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.000753
+        }
+      ]
+    },
+    "recorded_at": "2026-10-23T21:15:49.050Z"
+  },
+  "crossing|what_is|standard": {
+    "speech": [
+      "I can't judge traffic safety. Please rely on your cane, dog, or a crossing signal."
+    ],
+    "metrics": {
+      "total_ms": 1225,
+      "cost_usd": 0.000617,
+      "calls": [
+        {
+          "lane": "vision",
+          "model": "nvidia/Nemotron-3.5-Super-VL",
+          "latency_ms": 1225,
+          "prompt_tokens": 1631,
+          "completion_tokens": 142,
+          "reasoning_tokens": 0,
+          "cost_usd": 0.0006170999999999999
+        }
+      ]
+    },
+    "recorded_at": "2026-10-23T21:15:50.276Z"
+  }
+}

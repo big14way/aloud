@@ -146,15 +146,29 @@ NemoClaw, OpenShell and Hermes Agent sandbox general-purpose agents. Aloud is a 
 - Sets smaller than 30 are flagged.
 - Results are reported on a dev split and a held-out split.
 
-Measured so far:
+Measured on Nebius Token Factory, run once on 23 October 2026 ([docs/eval.md](docs/eval.md)):
 
-| What | Result |
-|---|---|
-| Memory scenarios (place, pick up, move silently, camera check, user-stated move, ambiguous names) | 14/14 correct status and wording (small set) |
-| Routing, offline rules lane, dev split (rules were tuned on this) | 49/49 |
-| Routing, offline rules lane, held-out split | 26/33 (78.8%). The paraphrases are what the Lightning lane is for. |
+| What | Dev | Held-out |
+|---|---|---|
+| Intent routing, Nemotron 3.5 Lightning (tool calling) | 49/49 | 29/33 (87.9%) |
+| Intent routing, offline rules (tuned on dev) | 49/49 | 26/33 (78.8%) |
+| Read: OCR character error rate | 3.0% (3 photos) | 1.5% (2 photos) |
+| Read: words or numbers spoken that are not on the page | 0 | 0 |
+| Bad shots (too dark, blurry) answered with guidance only | 1/1 | 1/1 |
+| Forbidden-claim violations | 0 | 0 |
+| Two-frame number lines: agreed / settled by Ultra / abstained | 21 / 3 / 0 | 4 / 0 / 0 |
+| Descriptions judged unsupported by Nemotron 3 Ultra | 3/11 | 6/6 |
+| Memory scenarios (place, pick up, move silently, camera check, user-stated move, ambiguous names) | 14/14 (no model) | |
+| Perception cost per hour of use (120 presses) | $0.10 | $0.11 |
 
-Vision metrics are pending a run with a Token Factory key and real photos, and will be added here: OCR error rate, invented words, key-fact recall, unsupported sentences, correct abstention on bad shots, forbidden-claim violations, numbers not on the page, latency and cost per hour. The bundled sample photos are rendered scenes. They prove the pipeline end to end; they are not a reliability claim.
+Every row is a small set, and the photos are rendered synthetic scenes, so these numbers show the pipeline works end to end. They are not a reliability claim.
+
+- **The weak spot is clear:** Describe on abstract drawings. In the held-out flat "room" picture, clothes became "oval obstacles", and the judge rejected every sentence.
+- **Two dev problems found in this run were fixed afterwards,** so they aren't reflected above:
+  - Read sometimes repeated a number that was already part of a line.
+  - An unsure person was stated plainly instead of being hedged.
+- **Latency:** server-side p50 was 2.2–2.7 s, measured from a slow connection (TLS handshakes alone took about 2 s). A deployed server keeps connections warm.
+- **Next:** a real photo set and a phone measurement are next ([eval/README.md](eval/README.md)).
 
 ## Privacy and safety
 

@@ -70,6 +70,10 @@ describe("people", () => {
     });
     expect(r.speech).toEqual(["A person, a few steps away, at 1 o'clock."]);
   });
+  it("hedges an unsure person like any other item", () => {
+    const r = render({ skill: "describe", read: read([item({ kind: "person", content: "a person", confidence: 0.6, position_clock: 6, distance: "within_reach" })]) });
+    expect(r.speech).toEqual(["I think there's a person, within reach, at 6 o'clock, but I'm not sure."]);
+  });
   it("redacts people hidden inside object items", () => {
     const r = render({ skill: "describe", read: read([item({ content: "a man reading a newspaper" })]) });
     expect(r.speech).toEqual(["A person."]);
@@ -108,6 +112,18 @@ describe("numbers", () => {
   it("speaks a number plainly only when both frames agreed", () => {
     const r = render({ skill: "read", read: receipt, numbers: new Map([[1, { source: "agreed" }]]) });
     expect(r.speech).toEqual(["Total", "$12.50"]);
+  });
+  it("does not read a number twice when it is also part of a line", () => {
+    const r = render({
+      skill: "read",
+      read: read([
+        item({ kind: "text", content: "You can renew them by phone on 0161 496 0142." }),
+        item({ kind: "number", content: "0161 496 0142", number_kind: "phone" }),
+        item({ kind: "number", content: "$12.50", number_kind: "price" }),
+      ]),
+      numbers: new Map([[0, { source: "agreed" }], [1, { source: "agreed" }], [2, { source: "agreed" }]]),
+    });
+    expect(r.speech).toEqual(["You can renew them by phone on 0161 496 0142.", "$12.50"]);
   });
   it("masks an unverified number and abstains", () => {
     const r = render({ skill: "read", read: receipt });

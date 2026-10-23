@@ -31,6 +31,7 @@ End with one item of kind "place" if the setting is clear, e.g. "a kitchen". Use
 
   read: `Read all legible text exactly as written, in reading order.
 One item per line, label field or sign. Use kind "text" for words and kind "number" for a standalone price, amount, phone number, date, time or banknote value.
+Never list a number again as its own item if it is already part of a line you transcribed.
 Do not correct spelling, translate, summarise or explain. Keep numbers, units and currency symbols exactly as printed.
 If part of a line is unreadable, transcribe the readable part and lower the confidence.`,
 

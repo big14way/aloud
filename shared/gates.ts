@@ -120,9 +120,11 @@ function where(item: VisionItem): string {
   return [clockPhrase(item.position_clock), distancePhrase(item.distance)].filter(Boolean).join(", ");
 }
 
-function personSentence(item: VisionItem): string {
-  const parts = ["A person", distancePhrase(item.distance), clockPhrase(item.position_clock)].filter(Boolean);
-  return `${parts.join(", ")}.`;
+/** People always come from this template; an unsure sighting is hedged like any other item. */
+function personSentence(item: VisionItem, plain = true): string {
+  const where = [distancePhrase(item.distance), clockPhrase(item.position_clock)].filter(Boolean).join(", ");
+  if (!plain) return `I think there's a person${where ? `, ${where}` : ""}, but I'm not sure.`;
+  return `${["A person", where].filter(Boolean).join(", ")}.`;
 }
 
 function maskNumbers(text: string): string {
@@ -197,7 +199,7 @@ function renderDescribe(input: RenderInput, flags: string[]): Body {
 
     if (item.kind === "person" || mentionsPerson(item.content)) {
       if (item.kind !== "person") flags.push("person_redacted");
-      speech.push(personSentence(item));
+      speech.push(personSentence(item, item.confidence >= THRESHOLDS.plain));
       continue;
     }
     if (looksLikeMedicine(item.content) || givesDosingAdvice(item.content)) {
@@ -250,10 +252,17 @@ function renderRead(input: RenderInput, flags: string[]): Body {
   let dropped = 0;
   let numberAbstained = false;
   const medicine = read.medicine_label || read.items.some((i) => looksLikeMedicine(i.content));
+  // Models sometimes list a number again as its own item after the line that contains it.
+  const lineNumbers = new Set(read.items.filter((i) => i.kind === "text").flatMap((i) => numericTokens(i.content)));
 
   read.items.forEach((item, index) => {
     if (item.confidence < THRESHOLDS.unsure) {
       dropped++;
+      return;
+    }
+    const tokens = numericTokens(item.content);
+    if (item.kind === "number" && tokens.length > 0 && tokens.every((t) => lineNumbers.has(t)) && item.content.replace(/[^\p{L}]/gu, "").length === 0) {
+      flags.push("duplicate_number_skipped");
       return;
     }
     const content = item.content;
@@ -317,7 +326,7 @@ function renderWhatIs(input: RenderInput, flags: string[]): Body {
     spokenConf.push(main.confidence);
     if (main.kind === "person" || mentionsPerson(main.content)) {
       if (main.kind !== "person") flags.push("person_redacted");
-      speech.push(personSentence(main));
+      speech.push(personSentence(main, main.confidence >= THRESHOLDS.plain));
     } else if (looksLikeMedicine(main.content) || givesDosingAdvice(main.content)) {
       flags.push("medicine");
       speech.push("This is a medicine. Press Read to hear the label word for word.");
