@@ -1,0 +1,16 @@
+# Never upload secrets, private notes or local data to Vercel.
+.env
+.env.*
+!.env.example
+ALOUD_BLUEPRINT.md
+FEEDBACK.md
+.live/
+eval/data/
+eval/runs/
+distill/data/
+distill/out/
+node_modules/
+dist/
+dev-dist/
+.vercel/
+*.pem
