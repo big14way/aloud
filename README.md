@@ -208,7 +208,7 @@ Phones only allow camera access over HTTPS, so test on a phone through a deploym
 ## Limits
 
 - **English only.**
-- **Not yet tested with blind or low-vision users.** Their feedback will be added here only with their consent.
+- **Tested on a phone by the developer, but not yet with blind or low-vision users.** Their feedback will be added here only with their consent.
 - **Describe and What-is need a connection.** Offline, Aloud can still read text (on-device OCR, after a one-time download in Settings) and answer "where are my things".
 - **Vision models can misread.** Aloud hedges, abstains and asks for a better shot, but it can still be wrong. Small or angled text is the hardest case.
 - **The distilled fast lane is optional,** and its endpoint is usually stopped. Lightning handles those calls by default.
