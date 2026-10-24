@@ -18,6 +18,18 @@ Today Nemotron 3.5 Lightning does these on Token Factory. The distilled student 
 | Serving | Serverless AI **Endpoint** | vLLM with `--enable-auto-tool-choice --tool-call-parser qwen3_coder`, token auth, stopped when not in use. |
 | Comparison in the app | Local | `npm run eval` adds a "Distilled Nemotron Nano 4B" row to the routing table when the endpoint is up. |
 
+## Teacher data (generated 24 October 2026)
+
+Nemotron 3 Ultra on Token Factory, $2.80 in total. Code kept only teacher outputs that passed Aloud's own checks:
+
+| Task | Kept / tried | Train | Val |
+|---|---|---|---|
+| Routing (tool calls) | 570 / 598 | 500 | 70 |
+| Easy-language rewrites | 234 / 250 | 212 | 22 |
+| Simple-mode plans | 145 / 150 | 131 | 14 |
+
+None of the 33 held-out evaluation utterances appear in the data. The data stays out of git and goes to Object Storage with `nebius.sh upload`.
+
 ## Run it
 
 ```bash
