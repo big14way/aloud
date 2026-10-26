@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { SeeRequest, SeeResponse } from "../shared/api.js";
 import { THRESHOLDS } from "../shared/config.js";
-import { enforceEasy, stepTurn, stripStepNumber } from "../shared/easy.js";
+import { cleanStep, enforceEasy, stepTurn } from "../shared/easy.js";
 import { type NumberVerdict, type VisionSkill, clockPhrase, distancePhrase, guidancePhrase, hasQualityIssue, qualityGate, render } from "../shared/gates.js";
 import { clamp01, clampClock, normalizeRead } from "../shared/normalize.js";
 import { compareFrames, hasNumber, numericTokens } from "../shared/numbers.js";
@@ -318,7 +318,7 @@ async function stepCheck(ctx: Ctx, req: SeeRequest, meter: Meter): Promise<SeeRe
 }
 
 export const PLAN_SYSTEM = `You help a person with a cognitive disability do one everyday task, one small step at a time.
-Use only the things listed in the scene. Make at most 5 steps. Each step is one action in at most 12 easy words.
+Use only the things listed in the scene. Make at most 5 steps. Each step is one action in at most 12 easy words, written as a plain sentence with no numbers, slashes, quotes or markdown.
 If something is hot or sharp, say "carefully". Never involve roads, medicine, or electrics beyond a normal switch.
 summary: one short sentence about the plan. encouragement: one short warm sentence.
 Reply with JSON only.`;
@@ -352,7 +352,7 @@ async function plan(ctx: Ctx, req: SeeRequest, meter: Meter): Promise<SeeRespons
   );
   meter.add(res.metrics);
   const steps = res.data.steps
-    .map((s) => stripStepNumber(s).trim())
+    .map((s) => cleanStep(s).trim())
     .filter((s) => speakable(s))
     .slice(0, 5)
     .map((s) => enforceEasy(s).join(" "));

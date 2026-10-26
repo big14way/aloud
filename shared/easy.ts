@@ -110,15 +110,24 @@ export function encouragement(turn: number): string {
 // steps itself, so a kept one is read twice: "Step 1: /1/ Fill the kettle." The lookahead
 // keeps times and amounts at the start of a step ("10:30", "1.5 cups").
 const STEP_NUMBER = /^\s*(?:step\s*\d{1,2}\s*[:.)\-–—]?|#\d{1,2}|[(\/[]?\d{1,2}\s*[)\/.:\-–—\]])(?!\d)\s*/i;
+// Symbols the model sometimes puts around a step: "/fill the kettle/", "**Fill the kettle**", "!\ Fill the kettle".
+// A step never starts with a symbol, except an opening quote or bracket.
+const LEADING_MARKS = /^[^\p{L}\p{N}"“(]+/u;
+const TRAILING_MARKS = /[\s/\\*_`~#|]+$/;
+const QUOTED = /^["“]\s*(.+?)\s*["”]$/;
 
-export function stripStepNumber(step: string): string {
-  const out = step.replace(STEP_NUMBER, "");
-  return out.trim() ? out : step;
+/** A step as one plain sentence: no numbering or stray marks, a capital, a full stop. */
+export function cleanStep(step: string): string {
+  let s = step.trim().replace(STEP_NUMBER, "").replace(LEADING_MARKS, "").replace(STEP_NUMBER, "").replace(TRAILING_MARKS, "");
+  s = (s.match(QUOTED)?.[1] ?? s).trim();
+  if (!s) return step.trim();
+  s = s.charAt(0).toUpperCase() + s.slice(1);
+  return /[\p{L}\p{N})]$/u.test(s) ? `${s}.` : s;
 }
 
 /** One step, spoken as: "Step 2: <step>. <encouragement, name>. Did that work?" */
 export function stepTurn(step: string, index: number, total: number, name?: string): string[] {
-  const body = enforceEasy(stripStepNumber(step));
+  const body = enforceEasy(cleanStep(step));
   const first = body[0] ?? step;
   const lead = total > 1 ? hardWrap(`Step ${index + 1}: ${first}`) : [first];
   const cheer = encouragement(index);
