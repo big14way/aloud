@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { SeeRequest, SeeResponse } from "../shared/api.js";
 import { THRESHOLDS } from "../shared/config.js";
-import { enforceEasy, stepTurn } from "../shared/easy.js";
+import { enforceEasy, stepTurn, stripStepNumber } from "../shared/easy.js";
 import { type NumberVerdict, type VisionSkill, clockPhrase, distancePhrase, guidancePhrase, hasQualityIssue, qualityGate, render } from "../shared/gates.js";
 import { clamp01, clampClock, normalizeRead } from "../shared/normalize.js";
 import { compareFrames, hasNumber, numericTokens } from "../shared/numbers.js";
@@ -352,7 +352,7 @@ async function plan(ctx: Ctx, req: SeeRequest, meter: Meter): Promise<SeeRespons
   );
   meter.add(res.metrics);
   const steps = res.data.steps
-    .map((s) => s.trim())
+    .map((s) => stripStepNumber(s).trim())
     .filter((s) => speakable(s))
     .slice(0, 5)
     .map((s) => enforceEasy(s).join(" "));

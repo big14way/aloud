@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CHECK_IN, checkEasy, enforceEasy, hardWrap, plainWords, splitSentences, stepTurn, words } from "./easy.js";
+import { CHECK_IN, checkEasy, enforceEasy, hardWrap, plainWords, splitSentences, stepTurn, stripStepNumber, words } from "./easy.js";
 
 describe("easy language", () => {
   it("replaces jargon with plain words and keeps capitals", () => {
@@ -21,6 +21,16 @@ describe("easy language", () => {
   it("enforces both rules deterministically", () => {
     const out = enforceEasy("Subsequently you should retrieve the clothes and deposit them in the receptacle beside the bed in the corner of the room by the window.");
     expect(checkEasy(out)).toEqual([]);
+  });
+  it("drops a number the model put in front of a step, and keeps times and amounts", () => {
+    for (const s of ["/1/ Fill the kettle.", "1. Fill the kettle.", "1) Fill the kettle.", "(1) Fill the kettle.", "Step 1: Fill the kettle.", "step 2 - Fill the kettle.", "#3 Fill the kettle."]) {
+      expect(stripStepNumber(s)).toBe("Fill the kettle.");
+    }
+    for (const s of ["10:30 is when the timer ends.", "1.5 cups of water go in.", "2 cups of water go in.", "Fill the kettle."]) {
+      expect(stripStepNumber(s)).toBe(s);
+    }
+    expect(stripStepNumber("1.")).toBe("1.");
+    expect(stepTurn("/1/ Carefully fill the kettle.", 0, 3)[0]).toBe("Step 1: Carefully fill the kettle.");
   });
   it("builds one step turn with encouragement, the name and a check-in", () => {
     expect(stepTurn("Put the clothes in the basket.", 0, 3, "Ada")).toEqual([

@@ -106,9 +106,19 @@ export function encouragement(turn: number): string {
   return ENCOURAGEMENTS[Math.abs(turn) % ENCOURAGEMENTS.length] ?? ENCOURAGEMENTS[0];
 }
 
+// A number the model put in front of a step ("1.", "2)", "/1/", "Step 3:"). Aloud numbers
+// steps itself, so a kept one is read twice: "Step 1: /1/ Fill the kettle." The lookahead
+// keeps times and amounts at the start of a step ("10:30", "1.5 cups").
+const STEP_NUMBER = /^\s*(?:step\s*\d{1,2}\s*[:.)\-–—]?|#\d{1,2}|[(\/[]?\d{1,2}\s*[)\/.:\-–—\]])(?!\d)\s*/i;
+
+export function stripStepNumber(step: string): string {
+  const out = step.replace(STEP_NUMBER, "");
+  return out.trim() ? out : step;
+}
+
 /** One step, spoken as: "Step 2: <step>. <encouragement, name>. Did that work?" */
 export function stepTurn(step: string, index: number, total: number, name?: string): string[] {
-  const body = enforceEasy(step);
+  const body = enforceEasy(stripStepNumber(step));
   const first = body[0] ?? step;
   const lead = total > 1 ? hardWrap(`Step ${index + 1}: ${first}`) : [first];
   const cheer = encouragement(index);

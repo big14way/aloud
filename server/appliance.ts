@@ -1,5 +1,5 @@
 import type { ApplianceRequest, ApplianceResponse, ApplianceStep } from "../shared/api.js";
-import { enforceEasy } from "../shared/easy.js";
+import { enforceEasy, stripStepNumber } from "../shared/easy.js";
 import { givesDosingAdvice, makesTrafficClaim, mentionsPerson } from "../shared/safety.js";
 import { StepPlan } from "../shared/schemas.js";
 import { type Ctx, Meter } from "./context.js";
@@ -86,7 +86,7 @@ export async function applianceSteps(ctx: Ctx, req: ApplianceRequest, tavily = n
   meter.add(res.metrics);
   const plan = res.data;
   let steps = plan.steps
-    .map((s) => ({ instruction: s.instruction.trim(), visual_check: s.visual_check.trim() }))
+    .map((s) => ({ instruction: stripStepNumber(s.instruction).trim(), visual_check: s.visual_check.trim() }))
     .filter(safeStep)
     .slice(0, MAX_STEPS);
   if (!plan.found_instructions || steps.length === 0) {
