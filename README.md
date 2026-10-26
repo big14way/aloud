@@ -203,7 +203,7 @@ Phones only allow camera access over HTTPS, so test on a phone through a deploym
 | `npm run record-samples` | Records saved answers for the sample photos from a live run. Used only when the live API can't answer, and always labelled as saved. |
 | `npm run samples` | Re-renders the sample photos (needs Playwright) |
 
-**Deploy:** `vercel.json` serves the PWA as static files and the API as one Hono function at `/api`. Set `NEBIUS_API_KEY` and `TAVILY_API_KEY` in the project's environment variables. `DAILY_BUDGET_USD` and `SESSION_LIMIT_PER_HOUR` cap demo spending; they are in-memory per instance, so treat them as best-effort.
+**Deploy:** `vercel.json` serves the PWA as static files and the API as one Hono function at `/api`. Set `NEBIUS_API_KEY` and `TAVILY_API_KEY` in the project's environment variables. `DAILY_BUDGET_USD` (default $1 a day) and `SESSION_LIMIT_PER_HOUR` (default 30) cap demo spending; they are in-memory per instance, so treat them as best-effort.
 
 ## Limits
 

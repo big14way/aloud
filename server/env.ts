@@ -38,7 +38,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
       : null,
     jsonMode: jsonMode === "json_object" || jsonMode === "prompt" ? jsonMode : "json_schema",
     adjudication: env.ENABLE_ADJUDICATION !== "false",
-    dailyBudgetUsd: num(env.DAILY_BUDGET_USD, 3),
+    dailyBudgetUsd: num(env.DAILY_BUDGET_USD, 1),
     sessionLimitPerHour: num(env.SESSION_LIMIT_PER_HOUR, 30),
   };
 }
