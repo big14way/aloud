@@ -1,0 +1,407 @@
+{
+ "clips_dir": "clips",
+ "work_dir": ".build",
+ "output": "out/aloud-laptop.mp4",
+ "voice": "en-US-AndrewMultilingualNeural",
+ "voice_rate": "+10%",
+ "crossfade": 0.6,
+ "sfx_gain": 0.5,
+ "brand": {
+  "name": "Aloud",
+  "domain": "getaloud.vercel.app",
+  "logo": "img/logo.png",
+  "paper": "#0d1013",
+  "paper_deep": "#171c21",
+  "ink": "#f5f7f9",
+  "ink_soft": "#b4bec8",
+  "ink_faint": "#5d6873",
+  "accent": "#ffd34d",
+  "accent_soft": "#ffe7a3",
+  "card": "#12161a"
+ },
+ "scenes": [
+  {
+   "id": "t0",
+   "kind": "title",
+   "tagline": "One press, and it tells you what's in front of you. And when it isn't sure.",
+   "tag": "Nebius x NVIDIA Global AI Hackathon \u00b7 Personal AI track",
+   "vo": "This is Aloud. One press, and it tells a blind person what's in front of them. And when it isn't sure, it says so."
+  },
+  {
+   "id": "p1",
+   "kind": "slide",
+   "label": "The problem",
+   "head": "If you can't see the page, you can't check the answer.",
+   "image": "img/letter.jpg",
+   "bullets": [
+    "At least 2.2 billion people live with a vision impairment (WHO, 2023)",
+    "A wrong price sounds as sure as a right one",
+    "Aloud says when it isn't sure, and how to fix the shot"
+   ],
+   "vo": "At least two point two billion people live with a vision impairment. If you can't see the page, you can't check what an assistant tells you, and a wrong price sounds as sure as a right one. Aloud is built to say when it isn't sure."
+  },
+  {
+   "id": "d1",
+   "kind": "laptop",
+   "layout": "wide",
+   "src": "read_letter.webm",
+   "cut": [
+    7.0,
+    21.5
+   ],
+   "crop": [
+    1920,
+    1080,
+    0,
+    0
+   ],
+   "max_speed": 1.6,
+   "step": "01",
+   "head": "Read: the text, word for word",
+   "sub": "On a laptop, sample photos stand in for the camera, so anyone can try every skill.",
+   "vo": "On a laptop, sample photos stand in for the camera, so anyone can try every skill. Read gives the text word for word, in reading order."
+  },
+  {
+   "id": "d2",
+   "kind": "laptop",
+   "layout": "wide",
+   "src": "read_bad.webm",
+   "cut": [
+    [
+     7.5,
+     20.0
+    ],
+    [
+     27.5,
+     39.5
+    ]
+   ],
+   "crop": [
+    1920,
+    1080,
+    0,
+    0
+   ],
+   "max_speed": 2.0,
+   "step": "02",
+   "head": "A bad shot gets guidance, not a guess",
+   "sub": "Cut off: which way to move. Too dark: what to do. It reads nothing it isn't sure of.",
+   "vo": "If the page is cut off, it tells you which way to move the phone. If it's too dark, it gives guidance, and reads nothing it can't see."
+  },
+  {
+   "id": "d3",
+   "kind": "laptop",
+   "layout": "wide",
+   "src": "receipt.webm",
+   "cut": [
+    7.0,
+    28.5
+   ],
+   "crop": [
+    1920,
+    1080,
+    0,
+    0
+   ],
+   "max_speed": 2.0,
+   "step": "03",
+   "head": "Numbers only when two frames agree",
+   "sub": "Two frames, 400 ms apart. If they disagree, Nemotron 3 Ultra compares the two reads, or Aloud abstains.",
+   "vo": "Numbers are spoken only when two frames agree. If they don't, Nemotron 3 Ultra compares the two reads, or Aloud says it can't confirm. Each answer lists the models it used."
+  },
+  {
+   "id": "d4",
+   "kind": "laptop",
+   "layout": "wide",
+   "src": "memory.webm",
+   "cut": [
+    [
+     19.5,
+     46.5
+    ]
+   ],
+   "crop": [
+    1920,
+    1080,
+    0,
+    0
+   ],
+   "max_speed": 2.2,
+   "step": "04",
+   "head": "It remembers what it can prove",
+   "sub": "The camera checks the object first. The memory stays on the phone.",
+   "vo": "Aloud remembers where you put things. The camera checks that these really are your keys, and the place stays on the phone. Ask later, and it answers with what it can prove: confirmed, and when."
+  },
+  {
+   "id": "d5",
+   "kind": "laptop",
+   "layout": "wide",
+   "src": "appliance.webm",
+   "cut": [
+    [
+     8.5,
+     17.5
+    ],
+    [
+     21.0,
+     27.0
+    ],
+    [
+     34.5,
+     43.5
+    ]
+   ],
+   "crop": [
+    1920,
+    1080,
+    0,
+    0
+   ],
+   "max_speed": 2.2,
+   "step": "05",
+   "head": "Appliances: Tavily finds the manual",
+   "sub": "It reads the model number, then searches and extracts the manual. It won't invent steps.",
+   "vo": "For appliances, it reads the model number, and Tavily searches and extracts the manual. This sample's model is made up, so Aloud says it found no clear steps, instead of inventing them."
+  },
+  {
+   "id": "d6",
+   "kind": "laptop",
+   "layout": "wide",
+   "src": "term_appliance.webm",
+   "cut": [
+    0.3,
+    15.0
+   ],
+   "crop": [
+    1760,
+    960,
+    80,
+    60
+   ],
+   "max_speed": 1.3,
+   "step": "06",
+   "head": "With a real model number",
+   "sub": "A real call on 26 October: Tavily found the maker's manual; Nemotron 3 Super wrote three steps, each with a camera check.",
+   "vo": "With a real model number, Tavily finds the maker's manual, and Nemotron 3 Super turns it into three steps, each with something the camera can check."
+  },
+  {
+   "id": "d7",
+   "kind": "laptop",
+   "layout": "wide",
+   "src": "simple.webm",
+   "cut": [
+    [
+     4.5,
+     10.5
+    ],
+    [
+     18.0,
+     22.5
+    ],
+    [
+     26.5,
+     34.3
+    ]
+   ],
+   "crop": [
+    1920,
+    1080,
+    0,
+    0
+   ],
+   "max_speed": 2.4,
+   "step": "07",
+   "head": "Simple mode: one short step at a time",
+   "sub": "For people with cognitive disabilities: short sentences, encouragement, and Did that work?",
+   "vo": "Simple mode is for people with cognitive disabilities: one short step at a time, with encouragement."
+  },
+  {
+   "id": "d8",
+   "kind": "laptop",
+   "layout": "wide",
+   "src": "refuse.webm",
+   "cut": [
+    7.5,
+    19.5
+   ],
+   "crop": [
+    1920,
+    1080,
+    0,
+    0
+   ],
+   "max_speed": 1.5,
+   "step": "08",
+   "head": "Some things it never guesses",
+   "sub": "No traffic-safety calls, no identifying people, no dosing advice. Enforced in code.",
+   "vo": "And some things it never guesses. It won't judge traffic, identify people, or give dosing advice, and that's enforced in code, not just in a prompt."
+  },
+  {
+   "id": "h1",
+   "kind": "slide",
+   "label": "How it works",
+   "head": "Four Nemotron models, one job each",
+   "bullets": [
+    {
+     "k": "Sees",
+     "v": "Nemotron 3.5 Super VL, reasoning off for speed"
+    },
+    {
+     "k": "Routes",
+     "v": "Nemotron 3.5 Lightning: tool calls, easy language"
+    },
+    {
+     "k": "Manuals",
+     "v": "Nemotron 3 Super: manual text into steps"
+    },
+    {
+     "k": "Judges",
+     "v": "Nemotron 3 Ultra: settles two disagreeing reads"
+    }
+   ],
+   "diagram": {
+    "boxes": [
+     {
+      "id": "ph",
+      "box": [
+       40,
+       40,
+       670,
+       140
+      ],
+      "title": "Phone or laptop",
+      "sub": "one press \u00b7 1 to 2 still frames \u00b7 memory stays here"
+     },
+     {
+      "id": "g",
+      "box": [
+       40,
+       250,
+       670,
+       350
+      ],
+      "title": "Gates in code",
+      "sub": "quality \u00b7 confidence \u00b7 two frames \u00b7 refusals",
+      "accent": true
+     },
+     {
+      "id": "tf",
+      "box": [
+       40,
+       470,
+       400,
+       600
+      ],
+      "title": "Token Factory",
+      "sub": "four Nemotron models"
+     },
+     {
+      "id": "tv",
+      "box": [
+       440,
+       470,
+       670,
+       600
+      ],
+      "title": "Tavily",
+      "sub": "manuals"
+     }
+    ],
+    "arrows": [
+     {
+      "from": "ph",
+      "from_side": "bottom",
+      "to": "g",
+      "to_side": "top",
+      "label": "a press",
+      "label_at": [
+       372,
+       196
+      ]
+     },
+     {
+      "from": "g",
+      "from_side": "bottom",
+      "from_dx": -135,
+      "to": "tf",
+      "to_side": "top",
+      "label": "structured reads",
+      "label_at": [
+       236,
+       412
+      ]
+     },
+     {
+      "from": "g",
+      "from_side": "bottom",
+      "from_dx": 200,
+      "to": "tv",
+      "to_side": "top",
+      "label": "model number",
+      "label_at": [
+       571,
+       412
+      ]
+     }
+    ],
+    "note": "The model never writes what Aloud says about an image."
+   },
+   "vo": "Under the hood, four Nemotron models on Nebius Token Factory each have one job: Super VL sees, with reasoning off for speed; Lightning routes; Super turns manuals into steps; and Ultra settles two disagreeing reads. Code decides what's safe to say."
+  },
+  {
+   "id": "e1",
+   "kind": "slide",
+   "label": "Measured",
+   "head": "What the evaluation shows",
+   "columns": 2,
+   "row_h": 150,
+   "bullets": [
+    {
+     "k": "0",
+     "v": "words or numbers spoken that weren't on the page"
+    },
+    {
+     "k": "0",
+     "v": "safety-rule violations"
+    },
+    {
+     "k": "2 of 2",
+     "v": "bad shots answered with guidance only"
+    },
+    {
+     "k": "29 of 33",
+     "v": "held-out requests routed right by Lightning"
+    },
+    {
+     "k": "$0.11",
+     "v": "perception cost per hour of use (120 presses)"
+    },
+    {
+     "k": "Small set",
+     "v": "rendered sample photos; a real-photo set is next"
+    }
+   ],
+   "vo": "On the test set, Aloud spoke nothing that wasn't on the page, broke no safety rules, and met every bad shot with guidance, for about eleven cents an hour of use. The photos are rendered, so a real-photo set is next."
+  },
+  {
+   "id": "z1",
+   "kind": "end",
+   "lines": [
+    "Try it yourself,",
+    "with the sample photos."
+   ],
+   "links": [
+    [
+     "Demo",
+     "getaloud.vercel.app"
+    ],
+    [
+     "Code",
+     "github.com/big14way/aloud"
+    ]
+   ],
+   "footer": "NVIDIA Nemotron on Nebius Token Factory \u00b7 Tavily \u00b7 MIT licence",
+   "vo": "Aloud. Try it yourself with the sample photos, at get aloud dot vercel dot app."
+  }
+ ]
+}

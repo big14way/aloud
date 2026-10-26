@@ -1,0 +1,1075 @@
+{
+ "base": "http://localhost:5173",
+ "viewport": [
+  1024,
+  576
+ ],
+ "window": [
+  1024,
+  666
+ ],
+ "video": [
+  1920,
+  1080
+ ],
+ "out": "clips",
+ "accent": "#ffd34d",
+ "colorScheme": "dark",
+ "scenes": [
+  {
+   "name": "read_letter",
+   "storageState": "state.json",
+   "steps": [
+    [
+     "goto",
+     "/",
+     ".quick"
+    ],
+    [
+     "wait",
+     1200
+    ],
+    [
+     "moveTo",
+     "header nav button:has-text(\"Samples\")",
+     600
+    ],
+    [
+     "click"
+    ],
+    [
+     "wait",
+     900
+    ],
+    [
+     "eval",
+     "(() => { const b=[...document.querySelectorAll('button.sample')].find(x=>x.innerText.includes(\"A letter\")); if (b) b.scrollIntoView({block:'center', behavior:'smooth'}); })()"
+    ],
+    [
+     "wait",
+     800
+    ],
+    [
+     "moveTo",
+     "button.sample:has-text(\"A letter\")",
+     700
+    ],
+    [
+     "click"
+    ],
+    [
+     "wait",
+     900
+    ],
+    [
+     "moveTo",
+     ".quick button:has-text(\"Read\")",
+     600
+    ],
+    [
+     "click"
+    ],
+    [
+     "waitUntil",
+     "(document.querySelector('.answer-text')||{innerText:''}).innerText.includes(\"Dear Sam\")",
+     30000
+    ],
+    [
+     "wait",
+     500
+    ],
+    [
+     "scrollTo",
+     ".answer",
+     30,
+     1200
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "zoom",
+     ".answer-text p:nth-child(6)",
+     1.35,
+     900,
+     2500
+    ],
+    [
+     "unzoom"
+    ],
+    [
+     "wait",
+     500
+    ]
+   ]
+  },
+  {
+   "name": "read_bad",
+   "storageState": "state.json",
+   "steps": [
+    [
+     "goto",
+     "/",
+     ".quick"
+    ],
+    [
+     "wait",
+     1200
+    ],
+    [
+     "moveTo",
+     "header nav button:has-text(\"Samples\")",
+     600
+    ],
+    [
+     "click"
+    ],
+    [
+     "wait",
+     900
+    ],
+    [
+     "eval",
+     "(() => { const b=[...document.querySelectorAll('button.sample')].find(x=>x.innerText.includes(\"Letter, cut off\")); if (b) b.scrollIntoView({block:'center', behavior:'smooth'}); })()"
+    ],
+    [
+     "wait",
+     800
+    ],
+    [
+     "moveTo",
+     "button.sample:has-text(\"Letter, cut off\")",
+     700
+    ],
+    [
+     "click"
+    ],
+    [
+     "wait",
+     900
+    ],
+    [
+     "moveTo",
+     ".quick button:has-text(\"Read\")",
+     600
+    ],
+    [
+     "click"
+    ],
+    [
+     "waitUntil",
+     "(document.querySelector('.answer-text')||{innerText:''}).innerText.includes(\"cut off\")",
+     30000
+    ],
+    [
+     "wait",
+     400
+    ],
+    [
+     "scrollTo",
+     ".answer-text p:last-child",
+     330,
+     1200
+    ],
+    [
+     "zoom",
+     ".answer-text p:last-child",
+     1.4,
+     900,
+     2600
+    ],
+    [
+     "unzoom",
+     600
+    ],
+    [
+     "scrollBy",
+     -3000,
+     700
+    ],
+    [
+     "moveTo",
+     "header nav button:has-text(\"Samples\")",
+     600
+    ],
+    [
+     "click"
+    ],
+    [
+     "wait",
+     900
+    ],
+    [
+     "eval",
+     "(() => { const b=[...document.querySelectorAll('button.sample')].find(x=>x.innerText.includes(\"Letter, too dark\")); if (b) b.scrollIntoView({block:'center', behavior:'smooth'}); })()"
+    ],
+    [
+     "wait",
+     800
+    ],
+    [
+     "moveTo",
+     "button.sample:has-text(\"Letter, too dark\")",
+     700
+    ],
+    [
+     "click"
+    ],
+    [
+     "wait",
+     900
+    ],
+    [
+     "moveTo",
+     ".quick button:has-text(\"Read\")",
+     600
+    ],
+    [
+     "click"
+    ],
+    [
+     "waitUntil",
+     "(document.querySelector('.answer-text')||{innerText:''}).innerText.includes(\"Too dark\")",
+     30000
+    ],
+    [
+     "wait",
+     400
+    ],
+    [
+     "scrollTo",
+     ".answer",
+     60,
+     1000
+    ],
+    [
+     "zoom",
+     ".answer-text p:last-child",
+     1.4,
+     900,
+     2600
+    ],
+    [
+     "unzoom"
+    ],
+    [
+     "wait",
+     400
+    ]
+   ]
+  },
+  {
+   "name": "receipt",
+   "storageState": "state.json",
+   "steps": [
+    [
+     "goto",
+     "/",
+     ".quick"
+    ],
+    [
+     "wait",
+     1200
+    ],
+    [
+     "moveTo",
+     "header nav button:has-text(\"Samples\")",
+     600
+    ],
+    [
+     "click"
+    ],
+    [
+     "wait",
+     900
+    ],
+    [
+     "eval",
+     "(() => { const b=[...document.querySelectorAll('button.sample')].find(x=>x.innerText.includes(\"A receipt\")); if (b) b.scrollIntoView({block:'center', behavior:'smooth'}); })()"
+    ],
+    [
+     "wait",
+     800
+    ],
+    [
+     "moveTo",
+     "button.sample:has-text(\"A receipt\")",
+     700
+    ],
+    [
+     "click"
+    ],
+    [
+     "wait",
+     900
+    ],
+    [
+     "moveTo",
+     ".quick button:has-text(\"Read\")",
+     600
+    ],
+    [
+     "click"
+    ],
+    [
+     "waitUntil",
+     "(document.querySelector('.answer-text')||{innerText:''}).innerText.includes(\"12.50\")",
+     30000
+    ],
+    [
+     "wait",
+     400
+    ],
+    [
+     "scrollTo",
+     ".answer-text p:nth-child(12)",
+     300,
+     1300
+    ],
+    [
+     "zoom",
+     ".answer-text p:nth-child(12)",
+     1.4,
+     900,
+     1800
+    ],
+    [
+     "unzoom",
+     600
+    ],
+    [
+     "moveTo",
+     "details.metrics summary",
+     700
+    ],
+    [
+     "click"
+    ],
+    [
+     "wait",
+     600
+    ],
+    [
+     "scrollTo",
+     "details.metrics",
+     120,
+     1000
+    ],
+    [
+     "zoom",
+     "details.metrics ul",
+     1.4,
+     900,
+     3500
+    ],
+    [
+     "unzoom"
+    ],
+    [
+     "wait",
+     300
+    ]
+   ]
+  },
+  {
+   "name": "memory",
+   "storageState": "state.json",
+   "steps": [
+    [
+     "goto",
+     "/",
+     ".quick"
+    ],
+    [
+     "wait",
+     1200
+    ],
+    [
+     "moveTo",
+     "header nav button:has-text(\"Samples\")",
+     600
+    ],
+    [
+     "click"
+    ],
+    [
+     "wait",
+     900
+    ],
+    [
+     "eval",
+     "(() => { const b=[...document.querySelectorAll('button.sample')].find(x=>x.innerText.includes(\"Keys on a shelf\")); if (b) b.scrollIntoView({block:'center', behavior:'smooth'}); })()"
+    ],
+    [
+     "wait",
+     800
+    ],
+    [
+     "moveTo",
+     "button.sample:has-text(\"Keys on a shelf\")",
+     700
+    ],
+    [
+     "click"
+    ],
+    [
+     "wait",
+     900
+    ],
+    [
+     "moveTo",
+     "#type-input",
+     600
+    ],
+    [
+     "click"
+    ],
+    [
+     "type",
+     "remember this as my keys",
+     45
+    ],
+    [
+     "wait",
+     250
+    ],
+    [
+     "moveTo",
+     ".type-box button[type=submit]",
+     450
+    ],
+    [
+     "click"
+    ],
+    [
+     "waitUntil",
+     "(document.querySelector('.answer-text')||{innerText:''}).innerText.includes(\"Let's learn\")",
+     30000
+    ],
+    [
+     "moveTo",
+     ".big-button",
+     600,
+     0,
+     40
+    ],
+    [
+     "click"
+    ],
+    [
+     "waitUntil",
+     "(document.querySelector('.answer-text')||{innerText:''}).innerText.includes(\"turn them over\")",
+     30000
+    ],
+    [
+     "moveTo",
+     ".big-button",
+     600,
+     0,
+     40
+    ],
+    [
+     "click"
+    ],
+    [
+     "waitUntil",
+     "(document.querySelector('.answer-text')||{innerText:''}).innerText.includes(\"sideways\")",
+     30000
+    ],
+    [
+     "moveTo",
+     ".big-button",
+     600,
+     0,
+     40
+    ],
+    [
+     "click"
+    ],
+    [
+     "waitUntil",
+     "(document.querySelector('.answer-text')||{innerText:''}).innerText.includes(\"Should I remember\")",
+     30000
+    ],
+    [
+     "moveTo",
+     ".big-button",
+     600,
+     0,
+     40
+    ],
+    [
+     "click"
+    ],
+    [
+     "waitUntil",
+     "(document.querySelector('.answer-text')||{innerText:''}).innerText.includes(\"Saved.\")",
+     30000
+    ],
+    [
+     "wait",
+     800
+    ],
+    [
+     "eval",
+     "window.__mark1 = 1"
+    ],
+    [
+     "moveTo",
+     "#type-input",
+     600
+    ],
+    [
+     "click"
+    ],
+    [
+     "type",
+     "I'm putting my keys on the hall shelf",
+     45
+    ],
+    [
+     "wait",
+     250
+    ],
+    [
+     "moveTo",
+     ".type-box button[type=submit]",
+     450
+    ],
+    [
+     "click"
+    ],
+    [
+     "waitUntil",
+     "(document.querySelector('.answer-text')||{innerText:''}).innerText.includes(\"on the hall shelf, confirmed\")",
+     30000
+    ],
+    [
+     "wait",
+     400
+    ],
+    [
+     "scrollTo",
+     ".answer",
+     40,
+     900
+    ],
+    [
+     "zoom",
+     ".answer-text",
+     1.4,
+     900,
+     2200
+    ],
+    [
+     "unzoom",
+     600
+    ],
+    [
+     "scrollBy",
+     -3000,
+     700
+    ],
+    [
+     "moveTo",
+     "#type-input",
+     600
+    ],
+    [
+     "click"
+    ],
+    [
+     "type",
+     "where are my keys",
+     45
+    ],
+    [
+     "wait",
+     250
+    ],
+    [
+     "moveTo",
+     ".type-box button[type=submit]",
+     450
+    ],
+    [
+     "click"
+    ],
+    [
+     "waitUntil",
+     "(document.querySelector('.answer-text')||{innerText:''}).innerText.includes(\"confirmed today\")",
+     30000
+    ],
+    [
+     "wait",
+     400
+    ],
+    [
+     "scrollTo",
+     ".answer",
+     40,
+     900
+    ],
+    [
+     "zoom",
+     ".answer-text",
+     1.4,
+     900,
+     3000
+    ],
+    [
+     "unzoom"
+    ],
+    [
+     "wait",
+     300
+    ]
+   ]
+  },
+  {
+   "name": "appliance",
+   "storageState": "state.json",
+   "steps": [
+    [
+     "goto",
+     "/",
+     ".quick"
+    ],
+    [
+     "wait",
+     1200
+    ],
+    [
+     "moveTo",
+     "header nav button:has-text(\"Samples\")",
+     600
+    ],
+    [
+     "click"
+    ],
+    [
+     "wait",
+     900
+    ],
+    [
+     "eval",
+     "(() => { const b=[...document.querySelectorAll('button.sample')].find(x=>x.innerText.includes(\"Microwave panel\")); if (b) b.scrollIntoView({block:'center', behavior:'smooth'}); })()"
+    ],
+    [
+     "wait",
+     800
+    ],
+    [
+     "moveTo",
+     "button.sample:has-text(\"Microwave panel\")",
+     700
+    ],
+    [
+     "click"
+    ],
+    [
+     "wait",
+     900
+    ],
+    [
+     "moveTo",
+     "#type-input",
+     600
+    ],
+    [
+     "click"
+    ],
+    [
+     "type",
+     "help me set the clock on this microwave",
+     45
+    ],
+    [
+     "wait",
+     250
+    ],
+    [
+     "moveTo",
+     ".type-box button[type=submit]",
+     450
+    ],
+    [
+     "click"
+    ],
+    [
+     "waitUntil",
+     "(document.querySelector('.answer-text')||{innerText:''}).innerText.includes(\"model label\")",
+     30000
+    ],
+    [
+     "wait",
+     400
+    ],
+    [
+     "scrollTo",
+     ".answer",
+     40,
+     900
+    ],
+    [
+     "wait",
+     1600
+    ],
+    [
+     "scrollBy",
+     -3000,
+     700
+    ],
+    [
+     "moveTo",
+     ".big-button",
+     600,
+     0,
+     40
+    ],
+    [
+     "click"
+    ],
+    [
+     "waitUntil",
+     "(document.querySelector('.answer-text')||{innerText:''}).innerText.includes('MW-2041') || (document.querySelector('.answer-text')||{innerText:''}).innerText.includes('2041')",
+     90000
+    ],
+    [
+     "wait",
+     500
+    ],
+    [
+     "scrollTo",
+     ".answer",
+     40,
+     900
+    ],
+    [
+     "zoom",
+     ".answer-text",
+     1.4,
+     900,
+     3200
+    ],
+    [
+     "unzoom"
+    ],
+    [
+     "wait",
+     300
+    ]
+   ]
+  },
+  {
+   "name": "simple",
+   "storageState": "state.json",
+   "steps": [
+    [
+     "goto",
+     "/",
+     ".quick"
+    ],
+    [
+     "wait",
+     1200
+    ],
+    [
+     "moveTo",
+     "header nav button:has-text(\"Settings\")",
+     600
+    ],
+    [
+     "click"
+    ],
+    [
+     "wait",
+     900
+    ],
+    [
+     "moveTo",
+     "label.choice:has-text(\"Simple mode\") input",
+     700
+    ],
+    [
+     "click"
+    ],
+    [
+     "wait",
+     700
+    ],
+    [
+     "moveTo",
+     ".dialog-head button",
+     600
+    ],
+    [
+     "click"
+    ],
+    [
+     "wait",
+     700
+    ],
+    [
+     "moveTo",
+     "header nav button:has-text(\"Samples\")",
+     600
+    ],
+    [
+     "click"
+    ],
+    [
+     "wait",
+     900
+    ],
+    [
+     "eval",
+     "(() => { const b=[...document.querySelectorAll('button.sample')].find(x=>x.innerText.includes(\"Kitchen counter\")); if (b) b.scrollIntoView({block:'center', behavior:'smooth'}); })()"
+    ],
+    [
+     "wait",
+     800
+    ],
+    [
+     "moveTo",
+     "button.sample:has-text(\"Kitchen counter\")",
+     700
+    ],
+    [
+     "click"
+    ],
+    [
+     "wait",
+     900
+    ],
+    [
+     "moveTo",
+     "#type-input",
+     600
+    ],
+    [
+     "click"
+    ],
+    [
+     "type",
+     "help me make a cup of tea",
+     45
+    ],
+    [
+     "wait",
+     250
+    ],
+    [
+     "moveTo",
+     ".type-box button[type=submit]",
+     450
+    ],
+    [
+     "click"
+    ],
+    [
+     "waitUntil",
+     "(document.querySelector('.answer-text')||{innerText:''}).innerText.includes(\"Step 1\")",
+     30000
+    ],
+    [
+     "wait",
+     400
+    ],
+    [
+     "scrollTo",
+     ".answer",
+     40,
+     900
+    ],
+    [
+     "zoom",
+     ".answer-text",
+     1.4,
+     900,
+     3500
+    ],
+    [
+     "unzoom"
+    ],
+    [
+     "wait",
+     300
+    ]
+   ]
+  },
+  {
+   "name": "refuse",
+   "storageState": "state.json",
+   "steps": [
+    [
+     "goto",
+     "/",
+     ".quick"
+    ],
+    [
+     "wait",
+     1200
+    ],
+    [
+     "moveTo",
+     "header nav button:has-text(\"Samples\")",
+     600
+    ],
+    [
+     "click"
+    ],
+    [
+     "wait",
+     900
+    ],
+    [
+     "eval",
+     "(() => { const b=[...document.querySelectorAll('button.sample')].find(x=>x.innerText.includes(\"Street crossing\")); if (b) b.scrollIntoView({block:'center', behavior:'smooth'}); })()"
+    ],
+    [
+     "wait",
+     800
+    ],
+    [
+     "moveTo",
+     "button.sample:has-text(\"Street crossing\")",
+     700
+    ],
+    [
+     "click"
+    ],
+    [
+     "wait",
+     900
+    ],
+    [
+     "moveTo",
+     "#type-input",
+     600
+    ],
+    [
+     "click"
+    ],
+    [
+     "type",
+     "is it safe to cross now?",
+     45
+    ],
+    [
+     "wait",
+     250
+    ],
+    [
+     "moveTo",
+     ".type-box button[type=submit]",
+     450
+    ],
+    [
+     "click"
+    ],
+    [
+     "waitUntil",
+     "(document.querySelector('.answer-text')||{innerText:''}).innerText.includes(\"traffic safety\")",
+     30000
+    ],
+    [
+     "wait",
+     400
+    ],
+    [
+     "scrollTo",
+     ".answer",
+     40,
+     900
+    ],
+    [
+     "zoom",
+     ".answer-text",
+     1.4,
+     900,
+     3000
+    ],
+    [
+     "unzoom"
+    ],
+    [
+     "wait",
+     300
+    ]
+   ]
+  },
+  {
+   "name": "term_appliance",
+   "viewport": [
+    1920,
+    1080
+   ],
+   "terminal": {
+    "title": "aloud \u00b7 appliance helper \u00b7 a real call, 26 Oct 2026",
+    "lines": [
+     {
+      "t": 0.5,
+      "html": "<span class=\"p\">\u279c</span> POST /api/appliance  <span class=\"str\">model \"NN-SN966S\"</span>  task <span class=\"str\">\"set the clock\"</span>",
+      "type": true,
+      "cps": 60
+     },
+     {
+      "t": 2.6,
+      "html": "<span class=\"dim\">  (the brand is hidden for this video)</span>"
+     },
+     {
+      "t": 3.0,
+      "html": "<span class=\"tool\">tavily.search </span>  owner's manual for NN-SN966S, how to set the clock"
+     },
+     {
+      "t": 4.0,
+      "html": "<span class=\"ok\">\u2713</span> 3 pages from the maker's support site <span class=\"dim\">(manual PDF, product page, help article)</span>"
+     },
+     {
+      "t": 5.0,
+      "html": "<span class=\"tool\">tavily.extract</span>  the parts of those pages about this task"
+     },
+     {
+      "t": 6.2,
+      "html": "<span class=\"tool\">nvidia/nemotron-3-super-120b-a12b</span>  <span class=\"dim\">3,062 tokens in \u00b7 128 out \u00b7 8.0 s \u00b7 $0.001</span>"
+     },
+     {
+      "t": 7.6,
+      "html": "<span class=\"ok\">\u2713 found_instructions: true</span>  3 steps, each with a camera check"
+     },
+     {
+      "t": 8.6,
+      "html": ""
+     },
+     {
+      "t": 8.7,
+      "html": "  <span class=\"agent\">1.</span> With the oven not cooking, press the Timer/Clock (Less) button twice."
+     },
+     {
+      "t": 8.9,
+      "html": "     <span class=\"dim\">camera check: the colon (:) blinks in the display window</span>"
+     },
+     {
+      "t": 9.8,
+      "html": "  <span class=\"agent\">2.</span> Enter the time of day using the Number pads."
+     },
+     {
+      "t": 10.0,
+      "html": "     <span class=\"dim\">camera check: the time appears, colon still blinking</span>"
+     },
+     {
+      "t": 10.9,
+      "html": "  <span class=\"agent\">3.</span> Press Timer/Clock (Less) once to finish setting."
+     },
+     {
+      "t": 11.1,
+      "html": "     <span class=\"dim\">camera check: the colon stops blinking</span>"
+     }
+    ],
+    "end": 15
+   }
+  }
+ ]
+}

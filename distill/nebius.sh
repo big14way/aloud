@@ -16,6 +16,8 @@ VLLM_IMAGE="${VLLM_IMAGE:-vllm/vllm-openai:v0.18.0-cu130}"
 PLATFORM="${PLATFORM:-gpu-l40s-a}"
 PRESET="${PRESET:-1gpu-8vcpu-32gb}"
 ENDPOINT="${ENDPOINT:-aloud-nano}"
+# The job is stopped after this long, so a stuck run can't keep billing (about $1.55/h on 1x L40S).
+JOB_TIMEOUT="${JOB_TIMEOUT:-90m}"
 SUBNET_ID="${SUBNET_ID:-$(nebius vpc subnet list --format jsonpath='{.items[0].metadata.id}')}"
 bucket_id() { nebius storage bucket get-by-name --name "$BUCKET" --format jsonpath='{.metadata.id}'; }
 
@@ -34,7 +36,7 @@ case "${1:-}" in
       --platform "$PLATFORM" \
       --preset "$PRESET" \
       --disk-size 200Gi \
-      --timeout 8h \
+      --timeout "$JOB_TIMEOUT" \
       --restart-policy never \
       --volume "$(bucket_id):/workspace/data" \
       --env "HF_HOME=/root/.cache/huggingface" \
