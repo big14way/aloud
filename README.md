@@ -70,7 +70,7 @@ flowchart LR
     SU[Nemotron 3 Super 120B<br/>manual to steps]
     UL[Nemotron 3 Ultra<br/>judges disagreeing reads]
   end
-  subgraph SAI["Nebius Serverless AI (training pending)"]
+  subgraph SAI["Nebius Serverless AI (roadmap)"]
     JOB[Job: LoRA SFT +<br/>held-out eval]
     EP[Endpoint: distilled<br/>Nemotron Nano 4B]
   end
@@ -111,7 +111,7 @@ All four run on **Nebius Token Factory** (serverless, OpenAI-compatible). Each h
 | `nvidia/Nemotron-3_5-Lightning` | Intent routing (tool calling with flat, typed arguments), easy-language rewriting, simple-mode plans | Cheap and fast for the everyday text calls ($0.06/$0.24 per 1M tokens) |
 | `nvidia/nemotron-3-super-120b-a12b` | Turns a Tavily manual excerpt into 3 to 6 steps, each with a camera check | Stronger reading of long, messy manual text |
 | `nvidia/Nemotron-3-Ultra-550b-a55b` | Settles disagreements between two vision reads; teacher for distillation; judge in evaluation | Serious reasoning, used sparingly: it judges between reads instead of "seeing" |
-| `nvidia/NVIDIA-Nemotron-3-Nano-4B-BF16` + LoRA | Optional fast lane for routing, shaping and plans | To be distilled on Nebius Serverless AI (below; the training run is pending). Small enough to run offline later. |
+| `nvidia/NVIDIA-Nemotron-3-Nano-4B-BF16` + LoRA | Optional fast lane for routing, shaping and plans | To be distilled on Nebius Serverless AI (below). The data and scripts are ready; the training run is on the [roadmap](#roadmap). Small enough to run offline later. |
 
 ### Where Token Factory accelerated the work
 
@@ -125,7 +125,7 @@ All four run on **Nebius Token Factory** (serverless, OpenAI-compatible). Each h
 
 `distill/` distils the everyday text work into **Nemotron 3 Nano 4B**:
 
-- **Status (27 October 2026):** the teacher data is generated and checked, and the job and endpoint scripts are ready. The training run itself has not happened yet, so Lightning handles these calls in the app today.
+- **Status:** the teacher data is generated and checked, and the job and endpoint scripts are ready. The training run is the first item on the [roadmap](#roadmap). Until it runs, Lightning handles these calls in the app.
 - **Teacher data:** Nemotron 3 Ultra on Token Factory writes the examples, and code keeps only those that pass Aloud's own checks.
 - **Job:** a **Serverless AI Job** (1× L40S) runs the LoRA SFT plus a held-out evaluation against the untouched base model. Artifacts go to Object Storage.
 - **Endpoint:** a **Serverless AI Endpoint** (vLLM, token auth) serves the result.
@@ -212,8 +212,16 @@ Phones only allow camera access over HTTPS, so test on a phone through a deploym
 - **Tested on a phone by the developer, but not yet with blind or low-vision users.** Their feedback will be added here only with their consent.
 - **Describe and What-is need a connection.** Offline, Aloud can still read text (on-device OCR, after a one-time download in Settings) and answer "where are my things".
 - **Vision models can misread.** Aloud hedges, abstains and asks for a better shot, but it can still be wrong. Small or angled text is the hardest case.
-- **The distilled fast lane is optional and not trained yet.** Lightning handles those calls.
+- **The distilled fast lane is not trained yet** (see the roadmap). Lightning handles those calls.
 - **iOS Safari can't vibrate,** so earcons stand in for haptics.
+
+## Roadmap
+
+1. **Train the Nemotron 3 Nano 4B fast lane.** The teacher data and the job and endpoint scripts in `distill/` are ready. One run on a single L40S (capped at 90 minutes), then the held-out comparison against the base model, then switch the fast lane on.
+2. **Test with blind and low-vision users,** and change Aloud based on what they say.
+3. **A real-photo evaluation set** of at least 40 phone photos, next to the bundled synthetic samples the evaluation uses today.
+4. **Run the distilled model on the phone,** so routing and simple-mode plans work without a connection.
+5. **More languages.** Aloud is English only today.
 
 ## Licence
 
