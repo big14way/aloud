@@ -13,7 +13,7 @@ When the picture is too dark, blurry or cut off, Aloud doesn't guess. It tells y
 
 > Aloud is not a medical device and not a mobility aid. Use it alongside your cane, guide dog, or a trusted person.
 
-Built for the Nebius x NVIDIA Global AI Hackathon, **Personal AI** track.
+Built for the Nebius x NVIDIA Global AI Hackathon, **Personal AI** track ([Devpost entry](https://devpost.com/software/aloud-xsny5c)).
 
 ## Try it
 
