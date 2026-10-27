@@ -17,7 +17,7 @@ Built for the Nebius x NVIDIA Global AI Hackathon, **Personal AI** track.
 
 ## Try it
 
-- **Video (2:50):** **https://youtu.be/FAoFP52D20w**. Aloud on a real phone, then every skill on a laptop.
+- **Video (2:50):** **https://youtu.be/FAoFP52D20w**. Aloud working on a real phone, plus the other skills on a laptop.
 - **Demo:** **https://getaloud.vercel.app**. Open it on a phone to use the camera. On a laptop, choose **Samples**: every skill works on the bundled sample photos, no camera needed.
 - **Controls:** tap anywhere to hear what's in front of you. Double-tap repeats. Hold to talk.
 - **Buttons:** Read, What is this, Find, Talk, Repeat and Stop. You can also type a request instead of speaking.
